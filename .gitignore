@@ -6,3 +6,5 @@ env
 .coverage
 htmlcov/
 .pytest_cache
+*.json
+staticfiles/
