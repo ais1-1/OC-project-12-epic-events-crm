@@ -31,6 +31,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Take environment variables from .env file
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
+BASE_URL = env("BASE_URL")
+
 # False if not in os.environ because of casting above
 DEBUG = env("DEBUG")
 
@@ -56,7 +58,17 @@ INSTALLED_APPS = [
     "clients",
     "contracts",
     "events",
+    "rest_framework",
+    "rest_framework.authtoken",
 ]
+
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+    ],
+}
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -138,7 +150,15 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = "static/"
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/3.0/howto/static-files/
+
+STATIC_URL = "/static/"
+STATICFILES_DIRS = [BASE_DIR.joinpath("static/")]
+
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR.joinpath("media/")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -147,3 +167,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 AUTH_USER_MODEL = "authentication.User"
+
+TOKEN_FILENAME = env("TOKEN_FILENAME")
+# Number of hours for token expiry
+EXPIRE_TOKEN = 24

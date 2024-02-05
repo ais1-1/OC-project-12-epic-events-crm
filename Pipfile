@@ -13,6 +13,9 @@ coverage = "*"
 flake8 = "*"
 black = "*"
 pytest-cov = "*"
+djangorestframework = "*"
+requests = "*"
+pytz = "*"
 
 [dev-packages]
 
