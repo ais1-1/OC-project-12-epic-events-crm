@@ -1,21 +1,18 @@
 import pytest
 import secrets
+from django.urls import reverse, resolve
+from rest_framework import status
+from rest_framework.authtoken.models import Token
+from django.shortcuts import get_object_or_404
+from django.http import Http404
 
 
 from teams.models import Team
+from authentication.views import CustomObtainAuthTokenView
 
 
 @pytest.mark.django_db
 class TestAuthenticationModels:
-    """def setup_method(self):
-    Create a User instance
-    self.superuser = User.objects.create_superuser(
-        email=f"{secrets.token_hex(10)}@{secrets.token_hex(10)}.com",
-        password=secrets.token_hex(10),
-        first_name=secrets.token_hex(10),
-        last_name=secrets.token_hex(10),
-    )"""
-
     @pytest.mark.usefixtures("superuser")
     def test_user_str(self, superuser):
         """
@@ -39,3 +36,101 @@ class TestAuthenticationModels:
                 last_name=secrets.token_hex(10),
                 role=Team.get_sales_team(),
             )
+
+    def test_create_sales_user(self, django_user_model):
+        email = f"{secrets.token_hex(10)}@{secrets.token_hex(10)}.com"
+        password = secrets.token_hex(10)
+        first_name = secrets.token_hex(10)
+        last_name = secrets.token_hex(10)
+        id = 800
+        user = django_user_model.objects.create_user(
+            id=id,
+            email=email,
+            password=password,
+            first_name=first_name,
+            last_name=last_name,
+            role=Team.get_sales_team(),
+        )
+        assert user.email == email
+        assert str(user) == f"{id}: {last_name} {first_name} ({email})"
+        assert user.role == Team.get_sales_team()
+
+
+@pytest.mark.django_db
+class TestLogin:
+    LOGIN_URL = reverse("obtain_token")
+
+    def test_obtain_token_url(self):
+        # Get url from name
+        url = reverse("obtain_token")
+
+        assert url == "/obtain-token/"
+        assert resolve(url).func, CustomObtainAuthTokenView
+
+    @pytest.mark.usefixtures("sales_user")
+    def test_login_with_valid_credentials(self, sales_user, api_client):
+        password = secrets.token_hex(10)
+        sales_user.set_password(password)
+        sales_user.save()
+        data = {
+            "email": sales_user.email,
+            "password": password,
+        }
+        response = api_client.post(self.LOGIN_URL, data, timeout=5000)
+        assert response.status_code == status.HTTP_200_OK
+        assert "token" in response.data.get("data").keys()
+
+    @pytest.mark.usefixtures("sales_user")
+    def test_login_with_invalid_email(self, sales_user, api_client):
+        password = secrets.token_hex(10)
+        sales_user.set_password(password)
+        sales_user.save()
+        email = "test@sales.com"
+        data = {
+            "email": email,
+            "password": password,
+        }
+        response = api_client.post(self.LOGIN_URL, data, timeout=5000)
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        assert "Invalid Email or Password" in response.data.get("message")
+
+    def test_login_without_credentials(self, api_client):
+        data = {
+            "email": "",
+            "password": "",
+        }
+        response = api_client.post(self.LOGIN_URL, data, timeout=5000)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "bad request" in response.data.get("message")
+
+
+@pytest.mark.django_db
+class TestLogout:
+    LOGOUT_URL = reverse("logout")
+
+    @pytest.mark.usefixtures("sales_user", "sales_user_authenticated_client")
+    def test_logout_authenticated(self, sales_user, sales_user_authenticated_client):
+
+        response = sales_user_authenticated_client.post(self.LOGOUT_URL)
+
+        assert response.status_code == status.HTTP_200_OK
+        # Test if the token is deleted
+        with pytest.raises(Http404):
+            get_object_or_404(Token, user=sales_user)
+        # Test if the user still exists
+        assert sales_user.email is not None
+
+
+@pytest.mark.django_db
+class TestUserViews:
+    USERS_URL = reverse("users-list")
+
+    @pytest.mark.usefixtures("sales_user", "sales_user_authenticated_client")
+    def test_sales_user_access(self, sales_user, sales_user_authenticated_client):
+        response = sales_user_authenticated_client.get(self.USERS_URL)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    @pytest.mark.usefixtures("superuser", "superuser_authenticated_client")
+    def test_superuser_access(self, superuser, superuser_authenticated_client):
+        response = superuser_authenticated_client.get(self.USERS_URL)
+        assert response.status_code == status.HTTP_200_OK

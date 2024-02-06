@@ -15,7 +15,7 @@ ABSOLUTE_PATH_TO_TOKEN_FILE = (
 )
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def api_client():
     client = APIClient()
     return client
@@ -40,6 +40,18 @@ def sales_user(django_user_model):
         first_name=secrets.token_hex(10),
         last_name=secrets.token_hex(10),
         role=Team.get_sales_team(),
+    )
+    return user
+
+
+@pytest.fixture
+def support_user(django_user_model):
+    user = django_user_model.objects.create_user(
+        email=f"{secrets.token_hex(10)}@{secrets.token_hex(10)}.com",
+        password=secrets.token_hex(10),
+        first_name=secrets.token_hex(10),
+        last_name=secrets.token_hex(10),
+        role=Team.get_support_team(),
     )
     return user
 
@@ -87,17 +99,30 @@ def unsigned_contract_without_client(sales_user):
     return contract
 
 
-@pytest.fixture
 def get_token_auth_client(api_client, user):
-    """
-    User token authentication.
-    """
+    LOGIN_URL = reverse("obtain_token")
+
+    password = secrets.token_hex(10)
+    user.set_password(password)
+    user.save()
     data = {
         "email": user.email,
-        "password": user.password,
+        "password": password,
     }
-    response = api_client.post(AUTH_URL, data, timeout=5000)
+    response = api_client.post(LOGIN_URL, data, timeout=5000)
     token = response.json().get("data").get("token")
     api_client.credentials(HTTP_AUTHORIZATION=f"Token {token}")
 
+    return api_client
+
+
+@pytest.fixture
+def sales_user_authenticated_client(api_client, sales_user):
+    api_client = get_token_auth_client(api_client, sales_user)
+    return api_client
+
+
+@pytest.fixture
+def superuser_authenticated_client(api_client, superuser):
+    api_client = get_token_auth_client(api_client, superuser)
     return api_client

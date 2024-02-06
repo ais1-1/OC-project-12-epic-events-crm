@@ -22,7 +22,7 @@ class UserViewSet(ModelViewSet):
 
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated, UserPermissions]
-    queryset = User.objects.all()
+    queryset = User.objects.all().order_by("id")
 
 
 class CustomObtainAuthTokenView(ObtainAuthToken):
