@@ -1,6 +1,8 @@
 import pytest
+from django.core.exceptions import PermissionDenied
 
-from .models import Team, MANAGEMENT, SALES, SUPPORT
+
+from .models import Team, MANAGEMENT, SALES, SUPPORT, TEAM_LIMIT
 
 
 @pytest.mark.django_db
@@ -37,3 +39,15 @@ class TestTeamsModels:
         expected = Team.objects.get(id=3)
         assert result == expected
         assert result.name == SUPPORT
+
+    def test_delete_team(self):
+        team = Team.get_sales_team()
+        with pytest.raises(PermissionDenied):
+            team.delete()
+
+    def test_create_new_team(self):
+        with pytest.raises(PermissionDenied):
+            Team.objects.create(name="TEST")
+
+    def test_existing_team_count(self):
+        assert Team.objects.all().count() == TEAM_LIMIT
