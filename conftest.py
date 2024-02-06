@@ -8,8 +8,6 @@ from clients.models import Client
 from teams.models import Team
 from contracts.models import Contract
 
-AUTH_URL = settings.BASE_URL.strip("/") + reverse("obtain_token")
-LOGOUT_URL = settings.BASE_URL.strip("/") + reverse("logout")
 ABSOLUTE_PATH_TO_TOKEN_FILE = (
     str(settings.BASE_DIR) + "/" + str(settings.TOKEN_FILENAME) + ".json"
 )
