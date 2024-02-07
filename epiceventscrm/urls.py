@@ -23,12 +23,14 @@ from django.conf.urls.static import static
 from authentication.views import UserViewSet, CustomObtainAuthTokenView, LogoutView
 from clients.views import ClientViewSet
 from contracts.views import ContractViewSet
+from events.views import EventViewSet
 
 router = DefaultRouter()
 
 router.register(r"users", UserViewSet, basename="users")
 router.register(r"clients", ClientViewSet, basename="clients")
 router.register(r"contracts", ContractViewSet, basename="contracts")
+router.register(r"events", EventViewSet, basename="events")
 
 urlpatterns = [
     path("epiccrmadmin/", admin.site.urls),

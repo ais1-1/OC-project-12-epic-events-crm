@@ -13,7 +13,6 @@ from authentication.views import CustomObtainAuthTokenView
 
 @pytest.mark.django_db
 class TestAuthenticationModels:
-    @pytest.mark.usefixtures("superuser")
     def test_user_str(self, superuser):
         """
         Testing if User's __str__ method is properly implemented
@@ -24,7 +23,6 @@ class TestAuthenticationModels:
             == f"{superuser.id}: {superuser.full_name} ({superuser.email})"
         )
 
-    @pytest.mark.usefixtures("superuser")
     def test_superuser_default_role(self, superuser):
         assert superuser.role == Team.get_management_team()
 
@@ -67,7 +65,6 @@ class TestLogin:
         assert url == "/obtain-token/"
         assert resolve(url).func, CustomObtainAuthTokenView
 
-    @pytest.mark.usefixtures("sales_user")
     def test_login_with_valid_credentials(self, sales_user, api_client):
         password = secrets.token_hex(10)
         sales_user.set_password(password)
@@ -80,7 +77,6 @@ class TestLogin:
         assert response.status_code == status.HTTP_200_OK
         assert "token" in response.data.get("data").keys()
 
-    @pytest.mark.usefixtures("sales_user")
     def test_login_with_invalid_email(self, sales_user, api_client):
         password = secrets.token_hex(10)
         sales_user.set_password(password)
@@ -108,7 +104,6 @@ class TestLogin:
 class TestLogout:
     LOGOUT_URL = reverse("logout")
 
-    @pytest.mark.usefixtures("sales_user", "sales_user_authenticated_client")
     def test_logout_authenticated(self, sales_user, sales_user_authenticated_client):
 
         response = sales_user_authenticated_client.post(self.LOGOUT_URL)
@@ -125,12 +120,10 @@ class TestLogout:
 class TestUserViews:
     USERS_URL = reverse("users-list")
 
-    @pytest.mark.usefixtures("sales_user", "sales_user_authenticated_client")
     def test_sales_user_access(self, sales_user, sales_user_authenticated_client):
         response = sales_user_authenticated_client.get(self.USERS_URL)
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
-    @pytest.mark.usefixtures("superuser", "superuser_authenticated_client")
     def test_superuser_access(self, superuser, superuser_authenticated_client):
         response = superuser_authenticated_client.get(self.USERS_URL)
         assert response.status_code == status.HTTP_200_OK

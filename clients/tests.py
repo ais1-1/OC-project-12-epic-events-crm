@@ -7,7 +7,6 @@ from .models import Client
 
 @pytest.mark.django_db
 class TestClientsModels:
-    @pytest.mark.usefixtures("epic_client", "client_without_contact")
     def test_client_str(self, epic_client, client_without_contact):
         assert (
             str(epic_client)
@@ -21,7 +20,6 @@ class TestClientsModels:
             + f"{client_without_contact.first_name}; No sales contact yet..."
         )
 
-    @pytest.mark.usefixtures("epic_client")
     def test_full_name_property(self, epic_client):
         assert (
             epic_client.full_name == f"{epic_client.last_name} {epic_client.first_name}"
@@ -32,22 +30,18 @@ class TestClientsModels:
 class TestClientViews:
     CLIENT_LIST_URL = reverse("clients-list")
 
-    @pytest.mark.usefixtures("sales_user", "sales_user_authenticated_client")
     def test_sales_user_list_access(self, sales_user, sales_user_authenticated_client):
         response = sales_user_authenticated_client.get(self.CLIENT_LIST_URL)
         assert response.status_code == status.HTTP_200_OK
 
-    @pytest.mark.usefixtures("superuser", "superuser_authenticated_client")
     def test_superuser_list_access(self, superuser, superuser_authenticated_client):
         response = superuser_authenticated_client.get(self.CLIENT_LIST_URL)
         assert response.status_code == status.HTTP_200_OK
 
-    @pytest.mark.usefixtures("superuser", "superuser_authenticated_client")
     def test_superuser_create_access(self, superuser, superuser_authenticated_client):
         response = superuser_authenticated_client.post(self.CLIENT_LIST_URL)
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
-    @pytest.mark.usefixtures("sales_user", "sales_user_authenticated_client")
     def test_sales_user_create_client(
         self, sales_user, sales_user_authenticated_client
     ):

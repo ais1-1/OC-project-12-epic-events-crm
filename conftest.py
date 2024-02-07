@@ -1,12 +1,15 @@
 import pytest
 import secrets
+import datetime
 from rest_framework.test import APIClient
 from django.urls import reverse
 from django.conf import settings
+from django.utils.timezone import make_aware
 
 from clients.models import Client
 from teams.models import Team
 from contracts.models import Contract
+from events.models import Event
 
 ABSOLUTE_PATH_TO_TOKEN_FILE = (
     str(settings.BASE_DIR) + "/" + str(settings.TOKEN_FILENAME) + ".json"
@@ -130,6 +133,18 @@ def unsigned_contract_without_client(sales_user):
     return contract
 
 
+@pytest.fixture
+def event(signed_contract, support_user):
+    event = Event.objects.create(
+        name=secrets.token_hex(10),
+        start_date=make_aware(datetime.datetime(2024, 3, 8)),
+        end_date=make_aware(datetime.datetime(2024, 3, 10)),
+        contract=signed_contract,
+        support_contact=support_user,
+    )
+    return event
+
+
 def get_token_auth_client(api_client, user):
     LOGIN_URL = reverse("obtain_token")
 
@@ -156,6 +171,12 @@ def sales_user_authenticated_client(api_client, sales_user):
 @pytest.fixture
 def sales_user2_authenticated_client(api_client, sales_user2):
     api_client = get_token_auth_client(api_client, sales_user2)
+    return api_client
+
+
+@pytest.fixture
+def support_user_authenticated_client(api_client, support_user):
+    api_client = get_token_auth_client(api_client, support_user)
     return api_client
 
 
