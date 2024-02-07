@@ -43,6 +43,18 @@ def sales_user(django_user_model):
 
 
 @pytest.fixture
+def sales_user2(django_user_model):
+    user = django_user_model.objects.create_user(
+        email=f"{secrets.token_hex(10)}@{secrets.token_hex(10)}.com",
+        password=secrets.token_hex(10),
+        first_name=secrets.token_hex(10),
+        last_name=secrets.token_hex(10),
+        role=Team.get_sales_team(),
+    )
+    return user
+
+
+@pytest.fixture
 def support_user(django_user_model):
     user = django_user_model.objects.create_user(
         email=f"{secrets.token_hex(10)}@{secrets.token_hex(10)}.com",
@@ -55,12 +67,23 @@ def support_user(django_user_model):
 
 
 @pytest.fixture
-def client(sales_user):
+def epic_client(sales_user):
     client = Client.objects.create(
         email=f"{secrets.token_hex(10)}@{secrets.token_hex(10)}.com",
         first_name=secrets.token_hex(10),
         last_name=secrets.token_hex(10),
         sales_contact=sales_user,
+    )
+    return client
+
+
+@pytest.fixture
+def epic_client2(sales_user2):
+    client = Client.objects.create(
+        email=f"{secrets.token_hex(10)}@{secrets.token_hex(10)}.com",
+        first_name=secrets.token_hex(10),
+        last_name=secrets.token_hex(10),
+        sales_contact=sales_user2,
     )
     return client
 
@@ -76,8 +99,18 @@ def client_without_contact():
 
 
 @pytest.fixture
-def signed_contract(client):
-    contract = Contract.objects.create(total_amount=1500, signed=True, client=client)
+def signed_contract(epic_client):
+    contract = Contract.objects.create(
+        total_amount=1500, signed=True, client=epic_client
+    )
+    return contract
+
+
+@pytest.fixture
+def signed_contract2(epic_client2):
+    contract = Contract.objects.create(
+        total_amount=1500, amount_due=100.00, signed=True, client=epic_client2
+    )
     return contract
 
 
@@ -117,6 +150,12 @@ def get_token_auth_client(api_client, user):
 @pytest.fixture
 def sales_user_authenticated_client(api_client, sales_user):
     api_client = get_token_auth_client(api_client, sales_user)
+    return api_client
+
+
+@pytest.fixture
+def sales_user2_authenticated_client(api_client, sales_user2):
+    api_client = get_token_auth_client(api_client, sales_user2)
     return api_client
 
 

@@ -7,12 +7,12 @@ from .models import Client
 
 @pytest.mark.django_db
 class TestClientsModels:
-    @pytest.mark.usefixtures("client", "client_without_contact")
-    def test_client_str(self, client, client_without_contact):
+    @pytest.mark.usefixtures("epic_client", "client_without_contact")
+    def test_client_str(self, epic_client, client_without_contact):
         assert (
-            str(client)
-            == f"{client.id}: {client.last_name} {client.first_name}; "
-            + f"contact: {client.sales_contact.full_name} "
+            str(epic_client)
+            == f"{epic_client.id}: {epic_client.last_name} {epic_client.first_name}; "
+            + f"contact: {epic_client.sales_contact.full_name} "
         )
         assert (
             str(client_without_contact)
@@ -21,9 +21,11 @@ class TestClientsModels:
             + f"{client_without_contact.first_name}; No sales contact yet..."
         )
 
-    @pytest.mark.usefixtures("client")
-    def test_full_name_property(self, client):
-        assert client.full_name == f"{client.last_name} {client.first_name}"
+    @pytest.mark.usefixtures("epic_client")
+    def test_full_name_property(self, epic_client):
+        assert (
+            epic_client.full_name == f"{epic_client.last_name} {epic_client.first_name}"
+        )
 
 
 @pytest.mark.django_db

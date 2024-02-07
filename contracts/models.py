@@ -61,5 +61,7 @@ class Contract(models.Model):
     def save(self, *args, **kwargs):
         if not self.sales_contact and self.client and self.client.sales_contact:
             self.sales_contact = self.client.sales_contact
+        if not self.amount_due:
+            self.amount_due = 0.0
 
         super(Contract, self).save(*args, **kwargs)
