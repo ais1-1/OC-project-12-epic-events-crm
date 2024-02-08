@@ -5,7 +5,8 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from django.shortcuts import get_object_or_404
 from django.http import Http404
-
+from django.core.management import call_command
+from io import StringIO
 
 from teams.models import Team
 from authentication.views import CustomObtainAuthTokenView
@@ -88,7 +89,9 @@ class TestLogin:
         }
         response = api_client.post(self.LOGIN_URL, data, timeout=5000)
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
-        assert "Invalid Email or Password" in response.data.get("message")
+        assert "We couldn't find a user with these credentials" in response.data.get(
+            "message"
+        )
 
     def test_login_without_credentials(self, api_client):
         data = {
@@ -127,3 +130,37 @@ class TestUserViews:
     def test_superuser_access(self, superuser, superuser_authenticated_client):
         response = superuser_authenticated_client.get(self.USERS_URL)
         assert response.status_code == status.HTTP_200_OK
+
+
+@pytest.mark.django_db
+class TestAuthenticationCommands:
+    LOGIN_COMMAND = "login"
+    LOGOUT_COMMAND = "logout"
+
+    def test_login(self, sales_user):
+        new_password = secrets.token_hex(10)
+        sales_user.set_password(new_password)
+        sales_user.save()
+        email = sales_user.email
+        password = new_password
+        out = StringIO()
+        call_command(
+            self.LOGIN_COMMAND, f"--email={email}", f"--password={password}", stdout=out
+        )
+        command_out = out.getvalue()
+        assert "It is highly recommended to not to give your password" in command_out
+
+    def test_request_get_token_with_unknown_email(self):
+        out = StringIO()
+        call_command(
+            self.LOGIN_COMMAND,
+            "--email=unknown@email.co",
+            "--password=secrettester",
+            stdout=out,
+        )
+        assert "Please try again" in out.getvalue()
+
+    def test_logout(self, sales_user):
+        out = StringIO()
+        call_command(self.LOGOUT_COMMAND, stdout=out)
+        assert "Please try again" in out.getvalue()
