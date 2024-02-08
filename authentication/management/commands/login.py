@@ -23,31 +23,46 @@ from utils.authentication import ABSOLUTE_PATH_TO_TOKEN_FILE
 AUTH_URL = settings.BASE_URL.strip("/") + reverse("obtain_token")
 
 
-def request_get_token():
+def request_get_token(email="", password=""):
     """
     Generate token on request.
     Returns dict containing credentials and token value.
     """
-    email = ""
-    password = ""
 
     draw_title()
     draw_subtitle("Login")
-    while True:
+
+    try:
+        validate_email(email)
+    except ValidationError as e:
+        console.print(f"[prompt.invalid]{str(e)}")
+        email = ""
+
+    try:
+        validate_password(password)
+    except ValidationError as e:
+        console.print(f"[prompt.invalid]{str(e)}")
+        password = ""
+
+    while email.strip() == "":
         email = Prompt.ask("[green]Enter your email[/green]")
         try:
-            validate_email(email)
-            break
+            valid_email = validate_email(email)
+            if valid_email:
+                break
         except ValidationError as e:
             console.print(f"[prompt.invalid]{str(e)}")
+            email = ""
 
-    while True:
+    while password.strip() == "":
         password = Prompt.ask("[green]Enter password[/green]", password=True)
         try:
-            validate_password(password)
-            break
+            valid_password = validate_password(password)
+            if valid_password:
+                break
         except ValidationError as e:
             console.print(f"[prompt.invalid]{str(e)}")
+            password = ""
 
     auth_data = {"email": email, "password": password, "token": None}
 
@@ -84,9 +99,29 @@ class Command(RichCommand):
 
     make_rich_console = partial(Console, theme=custom_theme)
 
+    def add_arguments(self, parser):
+        # Named (optional) arguments
+        parser.add_argument("--email", help="Provide the email to authenticate.")
+        parser.add_argument("--password", help="Provide your password to authenticate.")
+
     def handle(self, *args, **options):
         """Handles 'login' command"""
-        auth_data = request_get_token()
+
+        if options["email"]:
+            email = options["email"]
+        else:
+            email = ""
+
+        if options["password"]:
+            password = options["password"]
+            self.console.print(
+                "It is highly recommended to not to give your password in options.",
+                style="warning",
+            )
+        else:
+            password = ""
+
+        auth_data = request_get_token(email, password)
         if auth_data["token"] is not None:
             self.console.print(
                 "You have successfully logged in with the email "
