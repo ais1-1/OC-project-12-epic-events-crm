@@ -38,14 +38,12 @@ class CustomObtainAuthTokenView(ObtainAuthToken):
                 token, created = Token.objects.get_or_create(user=user)
                 utc_now = datetime.datetime.utcnow()
                 utc_now = utc_now.replace(tzinfo=pytz.utc)
+                # Recreate token if it is expired
                 if not created and token.created < utc_now - datetime.timedelta(
                     hours=settings.EXPIRE_TOKEN
                 ):
                     token.delete()
                     token = Token.objects.get_or_create(user=user)
-                    # update the created time of the token to keep it valid
-                    token.created = datetime.datetime.utcnow()
-                    token.save()
 
                 response = {
                     "status": status.HTTP_200_OK,
@@ -56,7 +54,8 @@ class CustomObtainAuthTokenView(ObtainAuthToken):
             else:
                 response = {
                     "status": status.HTTP_401_UNAUTHORIZED,
-                    "message": "Invalid Email or Password",
+                    "message": "We couldn't find a user with these credentials."
+                    + "Please retry with a valid email and password.",
                 }
                 return Response(response, status=status.HTTP_401_UNAUTHORIZED)
         response = {

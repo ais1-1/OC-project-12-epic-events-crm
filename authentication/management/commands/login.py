@@ -1,14 +1,26 @@
-import getpass
 import requests
 import json
-from django.core.management.base import BaseCommand
+import time
+from functools import partial
+from rich.progress import track
+from django_rich.management import RichCommand
+from rich.console import Console
+from rich.prompt import Prompt
 from django.urls import reverse
 from django.conf import settings
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
+from django.contrib.auth.password_validation import validate_password
+
+from utils.interface.console_style import (
+    console,
+    custom_theme,
+    draw_title,
+    draw_subtitle,
+)
+from utils.authentication import ABSOLUTE_PATH_TO_TOKEN_FILE
 
 AUTH_URL = settings.BASE_URL.strip("/") + reverse("obtain_token")
-ABSOLUTE_PATH_TO_TOKEN_FILE = (
-    str(settings.BASE_DIR) + "/" + str(settings.TOKEN_FILENAME) + ".json"
-)
 
 
 def request_get_token():
@@ -19,18 +31,37 @@ def request_get_token():
     email = ""
     password = ""
 
-    while email.strip() == "" or password.strip() == "":
-        print("Epic events crm")
-        email = input("Enter email:")
-        password = getpass.getpass("Enter password:")
+    draw_title()
+    draw_subtitle("Login")
+    while True:
+        email = Prompt.ask("[green]Enter your email[/green]")
+        try:
+            validate_email(email)
+            break
+        except ValidationError as e:
+            console.print(f"[prompt.invalid]{str(e)}")
+
+    while True:
+        password = Prompt.ask("[green]Enter password[/green]", password=True)
+        try:
+            validate_password(password)
+            break
+        except ValidationError as e:
+            console.print(f"[prompt.invalid]{str(e)}")
 
     auth_data = {"email": email, "password": password, "token": None}
+
     response = requests.post(url=AUTH_URL, data=auth_data, timeout=5000)
 
+    # Show progress bar
+    size = int(response.headers["Content-Length"])
+    for i in track(range(size), description="Processing your request..."):
+        time.sleep(0.01)  # Simulate work being done
+
     if response.status_code != 200:
-        print("Authentication impossible")
-        print(f"response status code: {response.status_code}")
-        print(f"response status text: {response.text}")
+        console.print("Authentication impossible:warning:", style="error")
+        console.print(f"response status code: {response.status_code}", style="info")
+        console.print(f"response status text: {response.text}", style="info")
         return auth_data
 
     auth_data["token"] = response.json().get("data").get("token")
@@ -49,13 +80,21 @@ def write_token(auth_data):
         json.dump(auth_data, json_file, indent=4)
 
 
-class Command(BaseCommand):
+class Command(RichCommand):
+
+    make_rich_console = partial(Console, theme=custom_theme)
+
     def handle(self, *args, **options):
         """Handles 'login' command"""
-
         auth_data = request_get_token()
         if auth_data["token"] is not None:
-            print(f"You have logged in, welcome {auth_data['email']}")
+            self.console.print(
+                "You have successfully logged in with the email "
+                + f"[bold blue]{auth_data['email']}[/bold blue] :smile:",
+                style="success",
+            )
             write_token(auth_data)
         else:
-            print("Something went wrong... Please try again!")
+            self.console.print(
+                "Something went wrong... Please try again!", style="warning"
+            )

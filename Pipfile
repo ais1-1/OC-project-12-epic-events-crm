@@ -16,6 +16,8 @@ pytest-cov = "*"
 djangorestframework = "*"
 requests = "*"
 pytz = "*"
+django-rich = "*"
+rich = "*"
 
 [dev-packages]
 
