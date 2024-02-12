@@ -25,10 +25,12 @@ class UserSerializer(serializers.ModelSerializer):
     """Serializes User model"""
 
     team_name = serializers.SerializerMethodField()
+    full_name = serializers.SerializerMethodField()
 
     password = serializers.CharField(
         write_only=True, required=True, validators=[validate_password]
     )
+    created_date = serializers.DateTimeField(read_only=True, format="%Y-%m-%d")
 
     class Meta:
         model = User
@@ -38,8 +40,13 @@ class UserSerializer(serializers.ModelSerializer):
             "email",
             "first_name",
             "last_name",
+            "full_name",
             "role",
             "team_name",
+            "is_staff",
+            "is_active",
+            "joined_date",
+            "created_date",
         )
         extra_kwargs = {
             "password": {"write_only": True, "style": {"input_type": "password"}}
@@ -49,6 +56,9 @@ class UserSerializer(serializers.ModelSerializer):
         if obj.role is None:
             return
         return obj.role.name
+
+    def get_full_name(self, obj):
+        return obj.full_name
 
     def validate_password(self, value: str) -> str:
         if value is not None:

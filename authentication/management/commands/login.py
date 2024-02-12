@@ -6,8 +6,6 @@ from rich.progress import track
 from django_rich.management import RichCommand
 from rich.console import Console
 from rich.prompt import Prompt
-from django.urls import reverse
-from django.conf import settings
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
@@ -19,8 +17,9 @@ from utils.interface.console_style import (
     draw_subtitle,
 )
 from utils.authentication import ABSOLUTE_PATH_TO_TOKEN_FILE
+from utils.common import get_absolute_url
 
-AUTH_URL = settings.BASE_URL.strip("/") + reverse("obtain_token")
+AUTH_URL = get_absolute_url("obtain_token")
 
 
 def request_get_token(email="", password=""):
@@ -32,24 +31,25 @@ def request_get_token(email="", password=""):
     draw_title()
     draw_subtitle("Login")
 
-    try:
-        validate_email(email)
-    except ValidationError as e:
-        console.print(f"[prompt.invalid]{str(e)}")
-        email = ""
+    if email.strip() != "":
 
-    try:
-        validate_password(password)
-    except ValidationError as e:
-        console.print(f"[prompt.invalid]{str(e)}")
-        password = ""
+        try:
+            validate_email(email)
+        except ValidationError as e:
+            console.print(f"[prompt.invalid]{str(e)}")
+            email = ""
+
+    if password.strip() != "":
+        try:
+            validate_password(password)
+        except ValidationError as e:
+            console.print(f"[prompt.invalid]{str(e)}")
+            password = ""
 
     while email.strip() == "":
         email = Prompt.ask("[green]Enter your email[/green]")
         try:
-            valid_email = validate_email(email)
-            if valid_email:
-                break
+            validate_email(email)
         except ValidationError as e:
             console.print(f"[prompt.invalid]{str(e)}")
             email = ""
@@ -57,9 +57,7 @@ def request_get_token(email="", password=""):
     while password.strip() == "":
         password = Prompt.ask("[green]Enter password[/green]", password=True)
         try:
-            valid_password = validate_password(password)
-            if valid_password:
-                break
+            validate_password(password)
         except ValidationError as e:
             console.print(f"[prompt.invalid]{str(e)}")
             password = ""
@@ -70,7 +68,7 @@ def request_get_token(email="", password=""):
 
     # Show progress bar
     size = int(response.headers["Content-Length"])
-    for i in track(range(size), description="Processing your request..."):
+    for i in track(range(size // 10), description="Processing your request..."):
         time.sleep(0.01)  # Simulate work being done
 
     if response.status_code != 200:

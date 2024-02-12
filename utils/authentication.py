@@ -32,12 +32,14 @@ def read_token() -> dict:
 
 def authorized_header() -> dict:
     access_token = read_token()
-    if access_token:
+
+    if access_token and validate_token(access_token):
+
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Token {access_token['token']}",
         }
-        return headers
+        return headers, access_token
     else:
         console.print(
             "We couldn't process your request as you are not logged in.",
@@ -45,12 +47,11 @@ def authorized_header() -> dict:
         )
 
 
-def validate_token():
-    credentials = read_token()
+def validate_token(credentials):
     token = Token.objects.get(user=User.objects.get(email=credentials["email"]))
     utc_now = datetime.datetime.utcnow()
     utc_now = utc_now.replace(tzinfo=pytz.utc)
-    if token is not credentials[
+    if str(token) is not credentials[
         "token"
     ] and token.created < utc_now - datetime.timedelta(hours=settings.EXPIRE_TOKEN):
 
@@ -58,7 +59,7 @@ def validate_token():
             "Your token has been expired. Please login again...", style="warning"
         )
         login_again()
-    elif token is not credentials["token"]:
+    elif str(token) != credentials["token"]:
         console.print("Please renew your token by logging in again...", style="warning")
         login_again()
     else:
@@ -68,6 +69,7 @@ def validate_token():
 def login_again():
     if Confirm.ask("Do you want to [i]login[/i]?", default=True):
         call_command("login")
+        exit()
     else:
         console.print("[b]OK. Bye[/b] :wave:")
         exit()

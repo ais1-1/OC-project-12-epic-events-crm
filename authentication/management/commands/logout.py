@@ -3,20 +3,19 @@ import requests
 from functools import partial
 from django_rich.management import RichCommand
 from rich.console import Console
-from django.conf import settings
-from django.urls import reverse
 
 from utils.authentication import ABSOLUTE_PATH_TO_TOKEN_FILE, authorized_header
+from utils.common import get_absolute_url
 from utils.interface.console_style import custom_theme, draw_title, draw_subtitle
 
-LOGOUT_URL = settings.BASE_URL.strip("/") + reverse("logout")
+LOGOUT_URL = get_absolute_url("logout")
 
 
 def request_logout():
     """Logs out the current user"""
     draw_title()
     draw_subtitle("Logout")
-    headers = authorized_header()
+    headers, auth_data = authorized_header()
     if os.path.isfile(ABSOLUTE_PATH_TO_TOKEN_FILE) is True:
         # Delete the credentials file
         os.remove(ABSOLUTE_PATH_TO_TOKEN_FILE)
