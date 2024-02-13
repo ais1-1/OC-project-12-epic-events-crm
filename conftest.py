@@ -22,13 +22,19 @@ def api_client():
     return client
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
+def use_test_token_file(settings):
+    settings.TOKEN_FILENAME = "testsecret.json"
+
+
+@pytest.fixture()
 def superuser(django_user_model):
     user = django_user_model.objects.create_superuser(
         email=f"{secrets.token_hex(10)}@{secrets.token_hex(10)}.com",
         password=secrets.token_hex(10),
         first_name=secrets.token_hex(10),
         last_name=secrets.token_hex(10),
+        role=Team.get_management_team(),
     )
     return user
 

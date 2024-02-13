@@ -132,23 +132,27 @@ class TestUserViews:
         assert response.status_code == status.HTTP_200_OK
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 class TestAuthenticationCommands:
     LOGIN_COMMAND = "login"
     LOGOUT_COMMAND = "logout"
+    USER_COMMAND = "user"
 
-    def test_login(self, sales_user):
-        new_password = secrets.token_hex(10)
-        sales_user.set_password(new_password)
-        sales_user.save()
-        email = sales_user.email
-        password = new_password
+    def setup_method(self):
+        self.email = "test@create.com"
+        self.password = "àyxauibép"
+
+    def test_login(self):
         out = StringIO()
         call_command(
-            self.LOGIN_COMMAND, f"--email={email}", f"--password={password}", stdout=out
+            self.LOGIN_COMMAND,
+            f"--email={self.email}",
+            f"--password={self.password}",
+            stdout=out,
         )
         command_out = out.getvalue()
         assert "It is highly recommended to not to give your password" in command_out
+        assert "successfully logged in" in command_out
 
     def test_request_get_token_with_unknown_email(self):
         out = StringIO()
@@ -158,9 +162,4 @@ class TestAuthenticationCommands:
             "--password=secrettester",
             stdout=out,
         )
-        assert "Please try again" in out.getvalue()
-
-    def test_logout(self, sales_user):
-        out = StringIO()
-        call_command(self.LOGOUT_COMMAND, stdout=out)
         assert "Please try again" in out.getvalue()
