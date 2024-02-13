@@ -76,6 +76,12 @@ class Command(RichCommand):
                 self.console.print(table)
             elif response.status_code == status.HTTP_403_FORBIDDEN:
                 self.console.print(response_dict["detail"], style="forbidden")
+            else:
+                for data in response_dict:
+                    self.console.print(
+                        f"[red1]{data}[/red1]: {response_dict[data][0]}",
+                        style="warning",
+                    )
 
         elif options["detail"]:
             user_input_invalid = True
@@ -116,6 +122,12 @@ class Command(RichCommand):
                 self.console.print(table)
             elif response.status_code == status.HTTP_403_FORBIDDEN:
                 self.console.print(response_dict["detail"], style="forbidden")
+            else:
+                for data in response_dict:
+                    self.console.print(
+                        f"[red1]{data}[/red1]: {response_dict[data][0]}",
+                        style="warning",
+                    )
 
         elif options["create"]:
 
@@ -171,6 +183,12 @@ class Command(RichCommand):
                 self.console.print(table)
             elif response.status_code == status.HTTP_403_FORBIDDEN:
                 self.console.print(response_dict["detail"], style="forbidden")
+            else:
+                for data in response_dict:
+                    self.console.print(
+                        f"[red1]{data}[/red1]: {response_dict[data][0]}",
+                        style="warning",
+                    )
 
         elif options["delete"]:
 
@@ -193,6 +211,13 @@ class Command(RichCommand):
             elif response.status_code == status.HTTP_403_FORBIDDEN:
                 response_dict = response.json()
                 self.console.print(response_dict["detail"], style="forbidden")
+            else:
+                response_dict = response.json()
+                for data in response_dict:
+                    self.console.print(
+                        f"[red1]{data}[/red1]: {response_dict[data][0]}",
+                        style="warning",
+                    )
 
         elif options["update"]:
             user_input_invalid = True
@@ -266,3 +291,9 @@ class Command(RichCommand):
                 self.console.print(table)
             elif response.status_code == status.HTTP_403_FORBIDDEN:
                 self.console.print(response_dict["detail"], style="forbidden")
+            else:
+                for data in response_dict:
+                    self.console.print(
+                        f"[red1]{data}[/red1]: {response_dict[data][0]}",
+                        style="warning",
+                    )
