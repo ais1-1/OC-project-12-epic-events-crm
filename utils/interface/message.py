@@ -37,7 +37,7 @@ def ask_for_user_re_input():
 
 
 def prompt_for_email_with_validation(
-    current_email: str = "", update_data: bool = False
+    current_email: str = "", update_data: bool = False, text: str = "user"
 ):
     if update_data:
         change_email = prompt_for_bool("Do you want to update email?")
@@ -46,13 +46,13 @@ def prompt_for_email_with_validation(
 
     email = ""
     while email.strip() == "":
-        email = Prompt.ask("[green]Enter user email[/green]")
+        email = Prompt.ask(f"[green]Enter {text} email[/green]")
         try:
             validate_email(email)
             return email
         except ValidationError as e:
             console.print(f"[prompt.invalid]{str(e)}")
-            email = ""
+            email = ask_for_user_re_input()
 
 
 def prompt_for_password_with_validation(
@@ -78,7 +78,7 @@ def prompt_for_required_string(
     field_name: str, current_text: str = "", update_data: bool = False
 ):
     if update_data:
-        change_text = prompt_for_bool(f"Do you want to change {field_name}?")
+        change_text = prompt_for_bool(f"Do you want to make changes to {field_name}?")
         if not change_text:
             return current_text
 

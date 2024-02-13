@@ -45,6 +45,7 @@ def authorized_header() -> dict:
             "We couldn't process your request as you are not logged in.",
             style="warning",
         )
+        exit()
 
 
 def validate_token(credentials):

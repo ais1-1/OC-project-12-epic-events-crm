@@ -3,7 +3,7 @@ from django.conf import settings
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 
-
+from clients.models import Client
 from utils.authentication import authorized_header
 from utils.interface.message import show_invalid, ask_for_user_re_input
 from utils.interface.console_style import console
@@ -64,6 +64,18 @@ def validate_user_email_input(user_input: str):
         return user, user_input_invalid
     except User.DoesNotExist:
         console.print("[prompt.invalid] We cannot find a user with this email!")
+        empty_user_input = ask_for_user_re_input()
+        user_input_invalid = True
+        return empty_user_input, user_input_invalid
+
+
+def validate_client_email_input(user_input: str):
+    try:
+        client = Client.objects.get(email=user_input)
+        user_input_invalid = False
+        return client, user_input_invalid
+    except Client.DoesNotExist:
+        console.print("[prompt.invalid] We cannot find a client with this email!")
         empty_user_input = ask_for_user_re_input()
         user_input_invalid = True
         return empty_user_input, user_input_invalid
