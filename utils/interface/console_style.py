@@ -2,6 +2,7 @@ from rich.console import Console
 from rich.theme import Theme
 from rich.table import Table
 from rich import box
+from rich.padding import Padding
 
 
 custom_theme = Theme(
@@ -42,6 +43,10 @@ def draw_subtitle(text: str):
 
 
 def table_with_title_nd_id_column(title: str):
-    table = Table(title=title, box=box.ROUNDED, show_lines=True, title_style="bold")
+    table = Table(
+        title=Padding(title, (1, 1, 0, 1), style="bold"),
+        box=box.ROUNDED,
+        show_lines=True,
+    )
     table.add_column("ID", justify="right", style="cyan1", no_wrap=True)
     return table

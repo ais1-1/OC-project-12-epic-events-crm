@@ -1,10 +1,15 @@
+import time
+from uuid import UUID
+from decimal import Decimal
 from django.core.management import call_command
-from rich.prompt import Confirm, Prompt
-from django.core.validators import validate_email
+from rich.prompt import Confirm, Prompt, FloatPrompt, InvalidResponse
+from django.core.validators import validate_email, DecimalValidator
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+from rich.progress import track
 
-
+from contracts.models import Contract
+from clients.models import Client
 from .console_style import console, draw_subtitle
 from teams.models import MANAGEMENT, SALES, SUPPORT, Team
 from utils.date_time import validate_date_input, create_date
@@ -134,3 +139,95 @@ def prompt_for_bool(text: str):
         return True
     else:
         return False
+
+
+def validate_uuid(uuid_to_test, version=4):
+    """
+    Check if uuid_to_test is a valid UUID.
+
+    Params:
+    uuid_to_test : str
+    version : {1, 2, 3, 4}
+
+    Returns:
+    `True` if uuid_to_test is a valid UUID, otherwise `False`.
+
+    """
+
+    try:
+        uuid_obj = UUID(uuid_to_test, version=version)
+        contract = Contract.objects.get(id=str(uuid_obj))
+    except (ValueError, Contract.DoesNotExist):
+        console.print("[prompt.invalid] Invalid id. Please verify the contract id.")
+        # Show progress bar
+        for i in track(
+            range(5), description="[green1]Collecting the list of contracts...[/green1]"
+        ):
+            time.sleep(0.1)  # Simulate work being done
+        call_command("contract", "--list")
+        return False, None
+    return str(uuid_obj) == uuid_to_test, contract
+
+
+def prompt_for_contract_id():
+
+    contract_id = ""
+
+    while contract_id.strip() == "":
+
+        contract_id = Prompt.ask("[green]Enter contract id[/green]")
+        is_valid, contract = validate_uuid(contract_id)
+        if is_valid:
+            return contract
+        else:
+            contract_id = ask_for_user_re_input()
+
+
+def prompt_for_client_from_email():
+    email = ""
+    while email.strip() == "":
+        email = Prompt.ask("[green]Enter the client's email[/green]")
+        try:
+            validate_email(email)
+            client = Client.objects.get(email=email)
+            return client
+        except (ValidationError, Client.DoesNotExist):
+            console.print(
+                "[prompt.invalid]Invalid email. Please verify the client's email."
+            )
+            # Show progress bar
+            for i in track(
+                range(5),
+                description="[green1]Collecting the list of clients...[/green1]",
+            ):
+                time.sleep(0.1)  # Simulate work being done
+            call_command("client", "--list")
+            email = ask_for_user_re_input()
+
+
+def prompt_for_decimal_value(
+    field_name: str, default_value=None, update_data: bool = False, current_amount=None
+):
+    if update_data:
+        change_amount = prompt_for_bool(f"Do you want to update {field_name}?")
+        if not change_amount:
+            return current_amount
+
+    amount = ""
+
+    while amount.strip() == "":
+        try:
+            amount = FloatPrompt.ask(
+                f"[green]Enter the {field_name}[/green]", default=default_value
+            )
+            # convert to decimal
+            console.print(
+                "The amount will be stored with two decimal places", style="info"
+            )
+            amount = Decimal(amount).quantize(Decimal("1.00"))
+            validate_decimal = DecimalValidator(max_digits=12, decimal_places=2)
+            validate_decimal(amount)
+            return amount
+        except (InvalidResponse, ValidationError) as e:
+            console.print(f"[prompt.invalid]{str(e)}")
+            amount = ask_for_user_re_input()

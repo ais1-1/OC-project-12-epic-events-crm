@@ -10,6 +10,9 @@ class ContractSerializer(serializers.ModelSerializer):
     client_name = serializers.SerializerMethodField()
     client_email = serializers.SerializerMethodField()
 
+    updated_date = serializers.DateTimeField(read_only=True, format="%Y-%m-%d")
+    created_date = serializers.DateTimeField(read_only=True, format="%Y-%m-%d")
+
     class Meta:
         model = Contract
         fields = "__all__"

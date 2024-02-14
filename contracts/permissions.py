@@ -20,6 +20,9 @@ class ContractPermissions(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         edit_methods = ["PUT", "PATCH"]
 
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
         if request.user.role == Team.get_management_team():
             return True
 
