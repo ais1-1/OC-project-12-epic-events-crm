@@ -29,25 +29,40 @@ class Command(RichCommand):
     def add_arguments(self, parser):
         # Named (optional) arguments
         parser.add_argument(
-            "-l", "--list", action="store_true", help="Show list of all the clients."
+            "-l", "--list", action="store_true", help="Show list of all the contracts."
         )
         parser.add_argument(
             "-det",
             "--detail",
             action="store_true",
-            help="Read detailed info for a client.",
+            help="Read detailed info for a contract.",
         )
         parser.add_argument(
-            "-c", "--create", action="store_true", help="Create a new client."
+            "-c", "--create", action="store_true", help="Create a new contract."
         )
         parser.add_argument(
             "-u",
             "--update",
             action="store_true",
-            help="Update certain information of a client.",
+            help="Update certain information of a contract.",
         )
         parser.add_argument(
-            "--delete", action="store_true", help="Delete a client from the database."
+            "--delete", action="store_true", help="Delete a contract from the database."
+        )
+        parser.add_argument(
+            "--unsigned",
+            action="store_true",
+            help="Show list of all the contracts that are not signed.",
+        )
+        parser.add_argument(
+            "--unpaid",
+            action="store_true",
+            help="Show list of all the contracts that have amount due.",
+        )
+        parser.add_argument(
+            "--own",
+            action="store_true",
+            help="Show list of all the contracts in which you are a contact.",
         )
 
     def handle(self, *args, **options):
@@ -284,3 +299,140 @@ class Command(RichCommand):
                         f"[red1]{data}[/red1]: {response_dict[data]}",
                         style="warning",
                     )
+
+        elif options["unsigned"]:
+            response, auth_data = request_response_data(
+                CONTRACTS_URL, "read", filter="unsigned"
+            )
+
+            if status.is_success(response.status_code):
+                table = table_with_title_nd_id_column("Unsigned contracts list")
+                table.add_column("Client", style="orchid1")
+                table.add_column("Sales contact", style="green1")
+                table.add_column("Total amount", style="yellow1")
+                table.add_column("Amount due", style="cyan1")
+                table.add_column("Signed", style="red1")
+                table.add_column("Created date", no_wrap=True, style="yellow2")
+                table.add_column("Updated date", no_wrap=True, style="royal_blue1")
+
+                response_dict = response.json()
+
+                for contract in response_dict:
+
+                    table.add_row(
+                        str(contract["id"]),
+                        f"{contract['client_name']}\n"
+                        + f"[red1]{contract['client_email']}[/red1]",
+                        f"{contract['sales_contact_name']}\n"
+                        + f"[cyan1]{contract['sales_contact_email']}[/cyan1]",
+                        contract["total_amount"],
+                        contract["amount_due"],
+                        str(contract["signed"]),
+                        str(contract["created_date"]),
+                        str(contract["updated_date"]),
+                    )
+                draw_title(auth_data["email"])
+                self.console.print(table)
+            elif response.status_code == status.HTTP_404_NOT_FOUND:
+                self.console.print(
+                    f"{response.text}",
+                    style="warning",
+                )
+            else:
+
+                self.console.print(
+                    f"{response.text}",
+                    style="warning",
+                )
+
+        elif options["unpaid"]:
+            response, auth_data = request_response_data(
+                CONTRACTS_URL, "read", filter="unpaid"
+            )
+
+            if status.is_success(response.status_code):
+                table = table_with_title_nd_id_column("Contracts with amount due")
+                table.add_column("Client", style="orchid1")
+                table.add_column("Sales contact", style="green1")
+                table.add_column("Total amount", style="yellow1")
+                table.add_column("Amount due", style="cyan1")
+                table.add_column("Signed", style="red1")
+                table.add_column("Created date", no_wrap=True, style="yellow2")
+                table.add_column("Updated date", no_wrap=True, style="royal_blue1")
+
+                response_dict = response.json()
+
+                for contract in response_dict:
+
+                    table.add_row(
+                        str(contract["id"]),
+                        f"{contract['client_name']}\n"
+                        + f"[red1]{contract['client_email']}[/red1]",
+                        f"{contract['sales_contact_name']}\n"
+                        + f"[cyan1]{contract['sales_contact_email']}[/cyan1]",
+                        contract["total_amount"],
+                        contract["amount_due"],
+                        str(contract["signed"]),
+                        str(contract["created_date"]),
+                        str(contract["updated_date"]),
+                    )
+                draw_title(auth_data["email"])
+                self.console.print(table)
+            elif response.status_code == status.HTTP_404_NOT_FOUND:
+                self.console.print(
+                    f"{response.text}",
+                    style="warning",
+                )
+            else:
+
+                self.console.print(
+                    f"{response.text}",
+                    style="warning",
+                )
+
+        elif options["own"]:
+            response, auth_data = request_response_data(
+                CONTRACTS_URL, "read", filter="own"
+            )
+
+            self.console.print(response)
+
+            if status.is_success(response.status_code):
+                table = table_with_title_nd_id_column("Contracts of your clients")
+                table.add_column("Client", style="orchid1")
+                table.add_column("Sales contact", style="green1")
+                table.add_column("Total amount", style="yellow1")
+                table.add_column("Amount due", style="cyan1")
+                table.add_column("Signed", style="red1")
+                table.add_column("Created date", no_wrap=True, style="yellow2")
+                table.add_column("Updated date", no_wrap=True, style="royal_blue1")
+
+                response_dict = response.json()
+
+                for contract in response_dict:
+
+                    table.add_row(
+                        str(contract["id"]),
+                        f"{contract['client_name']}\n"
+                        + f"[red1]{contract['client_email']}[/red1]",
+                        f"{contract['sales_contact_name']}\n"
+                        + f"[cyan1]{contract['sales_contact_email']}[/cyan1]",
+                        contract["total_amount"],
+                        contract["amount_due"],
+                        str(contract["signed"]),
+                        str(contract["created_date"]),
+                        str(contract["updated_date"]),
+                    )
+                draw_title(auth_data["email"])
+                self.console.print(table)
+            elif response.status_code == status.HTTP_404_NOT_FOUND:
+                self.console.print(
+                    f"{response.text}",
+                    style="warning",
+                )
+            else:
+
+                self.console.print(
+                    f"{response.text}",
+                    style="warning",
+                )

@@ -17,11 +17,9 @@ class ContractViewSet(ModelViewSet):
     queryset = Contract.objects.all()
 
     @action(detail=False)
-    def signed_unpaid(self, request):
-        if Contract.objects.filter(sales_contact=request.user).exists():
-            contracts = Contract.objects.filter(
-                signed=True, amount_due__gt=0.0, sales_contact=request.user
-            )
+    def own(self, request):
+        if Contract.objects.filter(sales_contact=request.user).count() > 0:
+            contracts = Contract.objects.filter(sales_contact=request.user)
             serializer = ContractSerializer(contracts, many=True)
             return Response(serializer.data)
         else:
@@ -31,10 +29,8 @@ class ContractViewSet(ModelViewSet):
 
     @action(detail=False)
     def unsigned(self, request):
-        if Contract.objects.filter(sales_contact=request.user).exists():
-            contracts = Contract.objects.filter(
-                signed=False, sales_contact=request.user
-            )
+        if Contract.objects.all().count() > 0:
+            contracts = Contract.objects.filter(signed=False)
             serializer = ContractSerializer(contracts, many=True)
             return Response(serializer.data)
         else:
@@ -44,10 +40,8 @@ class ContractViewSet(ModelViewSet):
 
     @action(detail=False)
     def unpaid(self, request):
-        if Contract.objects.filter(sales_contact=request.user).exists():
-            contracts = Contract.objects.filter(
-                amount_due__gt=0.0, sales_contact=request.user
-            )
+        if Contract.objects.all().count() > 0:
+            contracts = Contract.objects.filter(amount_due__gt=0.0)
             serializer = ContractSerializer(contracts, many=True)
             return Response(serializer.data)
         else:

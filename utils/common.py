@@ -29,6 +29,9 @@ def request_response_data(
     if object_id:
         absolute_url = absolute_url + str(object_id) + "/"
 
+    if filter:
+        absolute_url = absolute_url + filter + "/"
+
     headers, auth_data = authorized_header()
 
     if operation == "read":
