@@ -43,7 +43,7 @@ class CustomObtainAuthTokenView(ObtainAuthToken):
                     hours=settings.EXPIRE_TOKEN
                 ):
                     token.delete()
-                    token = Token.objects.get_or_create(user=user)
+                    token, created = Token.objects.get_or_create(user=user)
 
                 response = {
                     "status": status.HTTP_200_OK,
