@@ -67,8 +67,7 @@ def request_get_token(email="", password=""):
     response = requests.post(url=AUTH_URL, data=auth_data, timeout=5000)
 
     # Show progress bar
-    size = int(response.headers["Content-Length"])
-    for i in track(range(size // 20), description="Processing your request..."):
+    for i in track(range(100), description="Processing your request..."):
         time.sleep(0.01)  # Simulate work being done
 
     if response.status_code != 200:
