@@ -5,9 +5,8 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from django.shortcuts import get_object_or_404
 from django.http import Http404
-from django.core.management import call_command
-from io import StringIO
 
+from authentication.management.commands.login import request_get_token
 from teams.models import Team
 from authentication.views import CustomObtainAuthTokenView
 
@@ -147,18 +146,22 @@ class TestUserViews:
         assert response.status_code == status.HTTP_200_OK
 
 
-@pytest.mark.django_db(transaction=True)
+@pytest.mark.django_db
 class TestAuthenticationCommands:
     LOGIN_COMMAND = "login"
     LOGOUT_COMMAND = "logout"
     USER_COMMAND = "user"
 
-    def test_request_get_token_with_unknown_email(self):
-        out = StringIO()
-        call_command(
-            self.LOGIN_COMMAND,
-            "--email=unknown@email.co",
-            "--password=secrettester",
-            stdout=out,
+    def test_request_get_token_with_unknown_email(self, api_client):
+        auth_data = request_get_token(
+            email="unknown@email.co", password="blablasecret", client=api_client
         )
-        assert "Please try again" in out.getvalue()
+        assert auth_data["token"] == ""
+
+    def test_request_get_token_with_valid_credentials(self, superuser, api_client):
+        password = "bépo1234"
+        auth_data = request_get_token(
+            email=superuser.email, password=password, client=api_client
+        )
+        assert auth_data["email"] == superuser.email
+        assert auth_data["token"] != ""

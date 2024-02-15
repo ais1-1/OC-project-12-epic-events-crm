@@ -9,6 +9,8 @@ from rich.prompt import Prompt
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
+from django.urls import reverse
+from django.conf import settings
 
 from utils.interface.console_style import (
     console,
@@ -17,13 +19,10 @@ from utils.interface.console_style import (
     draw_subtitle,
 )
 from utils.authentication import ABSOLUTE_PATH_TO_TOKEN_FILE
-from utils.common import get_absolute_url
 from utils.interface.message import show_commands_and_help_texts
 
-AUTH_URL = get_absolute_url("obtain_token")
 
-
-def request_get_token(email="", password=""):
+def request_get_token(email="", password="", client=None):
     """
     Generate token on request.
     Returns dict containing credentials and token value.
@@ -63,18 +62,29 @@ def request_get_token(email="", password=""):
             console.print(f"[prompt.invalid]{str(e)}")
             password = ""
 
-    auth_data = {"email": email, "password": password, "token": None}
+    # token not None for test
+    auth_data = {"email": email, "password": password, "token": ""}
 
-    response = requests.post(url=AUTH_URL, data=auth_data, timeout=5000)
+    # For test
+    if client:
+        url = reverse("obtain_token")
+        response = client.post(url, data=auth_data, timeout=5000)
+    else:
+        response = requests.post(
+            url=settings.BASE_URL.strip("/") + reverse("obtain_token"),
+            data=auth_data,
+            timeout=5000,
+        )
 
     # Show progress bar
     for i in track(range(100), description="Processing your request..."):
         time.sleep(0.01)  # Simulate work being done
 
     if response.status_code != 200:
+        response_dict = response.json()
         console.print("Authentication impossible:warning:", style="error")
         console.print(f"response status code: {response.status_code}", style="info")
-        console.print(f"response status text: {response.text}", style="info")
+        console.print(f"response status text: {response_dict['message']}", style="info")
         return auth_data
 
     auth_data["token"] = response.json().get("data").get("token")

@@ -8,6 +8,7 @@ from django.contrib.auth import get_user_model
 from .interface import console_style, message
 from .authentication import ABSOLUTE_PATH_TO_TOKEN_FILE, read_token, authorized_header
 from .common import validate_user_email_input, get_absolute_url
+from .date_time import validate_date_input, validate_time_input, create_date
 
 User = get_user_model()
 
@@ -109,3 +110,92 @@ class TestCommon:
         url = get_absolute_url("logout")
         expected = settings.BASE_URL.strip("/") + reverse("logout")
         assert url == expected
+
+
+class TestDateTime:
+
+    def test_validate_date_input_with_invalid_year(self, capsys):
+        negative_year = -1
+        year_in_nineteenth_century = 1800
+        month = 2
+        day = 1
+        result1 = validate_date_input(negative_year, month, day)
+        captured1 = capsys.readouterr()
+        result2 = validate_date_input(year_in_nineteenth_century, month, day)
+        captured2 = capsys.readouterr()
+        assert result1 is False
+        assert result2 is False
+        assert "Year is invalid" in captured1.out
+        assert "Year is invalid" in captured2.out
+
+    def test_validate_date_input_with_invalid_month(self, capsys):
+        year = 2024
+        month1 = 0
+        month2 = 24
+        day = 1
+        result1 = validate_date_input(year, month1, day)
+        captured1 = capsys.readouterr()
+        result2 = validate_date_input(year, month2, day)
+        captured2 = capsys.readouterr()
+        assert result1 is False
+        assert result2 is False
+        assert "Month is invalid" in captured1.out
+        assert "Month is invalid" in captured2.out
+
+    def test_validate_date_input_with_invalid_day(self, capsys):
+        year = 2025
+        month1 = 2
+        day1 = 29
+        month2 = 1
+        day2 = 32
+        result1 = validate_date_input(year, month1, day1)
+        captured1 = capsys.readouterr()
+        result2 = validate_date_input(year, month2, day2)
+        captured2 = capsys.readouterr()
+        assert result1 is False
+        assert result2 is False
+        assert "Day is invalid" in captured1.out
+        assert "Day is invalid" in captured2.out
+
+    def test_validate_date_input_with_valid_args(self):
+        year = 2024
+        month = 4
+        day = 4
+        result = validate_date_input(year, month, day)
+        assert result is True
+
+    def test_validate_time_input(self):
+        hour = 14
+        minute = 42
+        result = validate_time_input(hour, minute)
+        assert result is True
+
+    def test_validate_time_input_invalid(self, capsys):
+        hour1 = 25
+        minute1 = 14
+        hour2 = 12
+        minute2 = 62
+        result1 = validate_time_input(hour1, minute1)
+        captured1 = capsys.readouterr()
+        result2 = validate_time_input(hour2, minute2)
+        captured2 = capsys.readouterr()
+        assert result1 is False
+        assert result2 is False
+        assert "Hour is invalid" in captured1.out
+        assert "Minute is invalid" in captured2.out
+
+    def test_create_date_valid(self):
+        year = 2024
+        month = 1
+        day = 2
+        hour = 4
+        minute = 5
+        result = create_date(year, month, day, hour, minute)
+        assert result == f"{year}-0{month}-0{day} 0{hour}:0{minute}"
+
+    def test_create_date_without_time(self):
+        year = 2025
+        month = 2
+        day = 5
+        result = create_date(year, month, day)
+        assert result == f"{year}-0{month}-0{day}"

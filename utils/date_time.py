@@ -3,7 +3,7 @@ from datetime import datetime
 from .interface.console_style import console
 
 
-def validate_date_input(year: str, month: str, day: str):
+def validate_date_input(year: int, month: int, day: int):
 
     # Get Max value for a day in given month
     if (
@@ -75,5 +75,3 @@ def create_date(year: int, month: int, day: int, hour: int = None, minute: int =
         date_object = datetime.strptime(entry, "%Y-%m-%d")
         date_string = date_object.strftime("%Y-%m-%d")
         return date_string
-    else:
-        return None

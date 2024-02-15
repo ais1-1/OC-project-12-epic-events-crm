@@ -30,11 +30,10 @@ def use_test_token_file(settings):
 @pytest.fixture()
 def superuser(django_user_model):
     user = django_user_model.objects.create_superuser(
-        email=f"{secrets.token_hex(10)}@{secrets.token_hex(10)}.com",
-        password=secrets.token_hex(10),
+        email="manager@epicevents.com",
+        password="bépo1234",
         first_name=secrets.token_hex(10),
         last_name=secrets.token_hex(10),
-        role=Team.get_management_team(),
     )
     return user
 
