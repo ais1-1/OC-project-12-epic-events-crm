@@ -18,6 +18,7 @@ from utils.interface.console_style import (
 )
 from utils.authentication import ABSOLUTE_PATH_TO_TOKEN_FILE
 from utils.common import get_absolute_url
+from utils.interface.message import show_commands_and_help_texts
 
 AUTH_URL = get_absolute_url("obtain_token")
 
@@ -126,6 +127,10 @@ class Command(RichCommand):
                 style="success",
             )
             write_token(auth_data)
+            # Show progress bar
+            for i in track(range(100), description="Collecting useful commands..."):
+                time.sleep(0.01)  # Simulate work being done
+            show_commands_and_help_texts()
         else:
             self.console.print(
                 "Something went wrong... Please try again!", style="warning"
