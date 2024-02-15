@@ -74,20 +74,20 @@ class Event(models.Model):
         if self.contract.client:
             return f"{self.contract.client.full_name}"
         else:
-            return "The contract is not linked to a client."
+            return "No client for the contract."
 
     @property
     def client_email(self):
         if self.contract.client:
             return f"{self.contract.client.email}"
         else:
-            return "The contract is not linked to a client."
+            return "No client for the contract."
 
     @property
     def client_phone(self):
         if self.contract.client and self.contract.client.phone:
             return f"{self.contract.client.phone}"
         elif not self.contract.client.phone:
-            return "There is no phone number entered for the client."
+            return "Data unavailable."
         else:
-            return "There is no client linked to the contract."
+            return "No client for the contract."
