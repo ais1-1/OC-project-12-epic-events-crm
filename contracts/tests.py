@@ -125,7 +125,6 @@ class TestContractsViews:
         assert response.status_code == HttpResponseNotFound.status_code
         assert has_unpaid_contract is False
 
-
     def test_unpaid_contract_not_empty_list(
         self,
         sales_user2,

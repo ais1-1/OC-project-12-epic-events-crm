@@ -3,6 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.http import HttpResponseNotFound
+from rest_framework import status
 
 from .serializers import ContractSerializer
 from .models import Contract
@@ -44,6 +45,34 @@ class ContractViewSet(ModelViewSet):
             contracts = Contract.objects.filter(amount_due__gt=0.0)
             serializer = ContractSerializer(contracts, many=True)
             return Response(serializer.data)
+        else:
+            return HttpResponseNotFound(
+                "Sorry, we couldn't find data corresponding your request."
+            )
+
+    @action(detail=False)
+    def signed(self, request):
+        if Contract.objects.all().count() > 0:
+            contracts = Contract.objects.filter(signed=True)
+            serializer = ContractSerializer(contracts, many=True)
+            return Response(serializer.data)
+        else:
+            return HttpResponseNotFound(
+                "Sorry, we couldn't find data corresponding your request."
+            )
+
+    @action(detail=False)
+    def without_event(self, request):
+        contracts = Contract.objects.filter(signed=True).filter(event__isnull=True)
+        if contracts.count() > 0:
+            serializer = ContractSerializer(contracts, many=True)
+            return Response(serializer.data)
+        elif contracts.count() == 0:
+            response = {
+                "status": status.HTTP_204_NO_CONTENT,
+                "message": "All the signed contracts have associated events.",
+            }
+            return Response(response, status=status.HTTP_204_NO_CONTENT)
         else:
             return HttpResponseNotFound(
                 "Sorry, we couldn't find data corresponding your request."
