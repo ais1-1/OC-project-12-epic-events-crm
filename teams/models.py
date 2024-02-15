@@ -33,7 +33,7 @@ class Team(models.Model):
 
     def save(self, *args, **kwargs):
         """Prevent from creating new teams or editing existing teams."""
-        if Team.objects.all().count() <= TEAM_LIMIT or self.pk is not None:
+        if Team.objects.all().count() >= TEAM_LIMIT or self.pk is not None:
             raise PermissionDenied("You are not permitted to create team")
 
     def delete(self, using=None, keep_parents=False):
