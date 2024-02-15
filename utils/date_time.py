@@ -3,18 +3,7 @@ from datetime import datetime
 from .interface.console_style import console
 
 
-def validate_date_input(year_input: str, month_input: str, day_input: str):
-    if (
-        year_input.strip() != ""
-        and month_input.strip() != ""
-        and day_input.strip() != ""
-    ):
-        year = int(year_input)
-        month = int(month_input)
-        day = int(day_input)
-    else:
-        console.print("[prompt.invalid]Please enter valid values.")
-        return False
+def validate_date_input(year: str, month: str, day: str):
 
     # Get Max value for a day in given month
     if (
@@ -47,8 +36,37 @@ def validate_date_input(year_input: str, month_input: str, day_input: str):
         return True
 
 
-def create_date(year: str, month: str, day: str):
-    if year and month and day:
+def validate_time_input(hour: int, minute: int):
+    if hour < 0 or hour > 23:
+        console.print("[prompt.invalid]Hour is invalid.")
+        return False
+    elif minute < 0 or minute > 59:
+        console.print("[prompt.invalid]Minute is invalid")
+        return False
+    else:
+        return True
+
+
+def create_date(year: int, month: int, day: int, hour: int = None, minute: int = None):
+    year = str(year)
+    month = str(month)
+    day = str(day)
+    if year and month and day and hour and minute:
+        hour = str(hour)
+        minute = str(minute)
+        if len(month) == 1:
+            month = "0" + month
+        if len(day) == 1:
+            day = "0" + day
+        if len(hour) == 1:
+            hour = "0" + hour
+        if len(minute) == 1:
+            minute = "0" + minute
+        entry = f"{year}-{month}-{day} {hour}:{minute}"
+        datetime_object = datetime.strptime(entry, "%Y-%m-%d %H:%M")
+        datetime_string = datetime_object.strftime("%Y-%m-%d %H:%M")
+        return datetime_string
+    elif year and month and day:
         if len(month) == 1:
             month = "0" + month
         if len(day) == 1:

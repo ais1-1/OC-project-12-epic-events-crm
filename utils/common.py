@@ -11,6 +11,13 @@ from utils.interface.console_style import console
 User = get_user_model()
 
 
+def get_connected_user():
+    header, auth_data = authorized_header()
+    connected_user_email = auth_data["email"]
+    user = User.objects.get(email=connected_user_email)
+    return user
+
+
 def get_absolute_url(endpoint: str):
     absolute_url = settings.BASE_URL.strip("/") + reverse(endpoint)
     return absolute_url

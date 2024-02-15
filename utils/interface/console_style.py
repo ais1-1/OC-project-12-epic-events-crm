@@ -14,7 +14,7 @@ custom_theme = Theme(
         "title-line": "spring_green4",
         "subtitle-line": "spring_green2",
         "error": "bold italic bright_red",
-        "success": "bold green4",
+        "success": "bold green1",
         "forbidden": "dark_orange",
         "prompt": "green",
     }
