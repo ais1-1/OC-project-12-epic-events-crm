@@ -28,7 +28,8 @@ class TestClientsModels:
 
 @pytest.mark.django_db
 class TestClientViews:
-    CLIENT_LIST_URL = reverse("clients-list")
+    def setup_method(self):
+        self.CLIENT_LIST_URL = reverse("clients-list")
 
     def test_sales_user_list_access(self, sales_user, sales_user_authenticated_client):
         response = sales_user_authenticated_client.get(self.CLIENT_LIST_URL)

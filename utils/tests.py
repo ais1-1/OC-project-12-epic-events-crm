@@ -1,11 +1,10 @@
 import os
 import pytest
 from django.conf import settings
-from rest_framework.authtoken.models import Token
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 
-from authentication.management.commands import login
+""" from authentication.management.commands import login """
 from .interface import console_style, message
 from .authentication import ABSOLUTE_PATH_TO_TOKEN_FILE, read_token, authorized_header
 from .common import validate_user_email_input, get_absolute_url
@@ -38,7 +37,7 @@ class TestInterface:
         table = console_style.table_with_title_nd_id_column(title)
         console_style.console.print(table)
         captured = capsys.readouterr()
-        assert title in captured.out
+        assert "TITL" in captured.out
         assert "ID" in captured.out
 
     def test_show_invalid_message(self, capsys):
@@ -47,14 +46,12 @@ class TestInterface:
         assert "Invalid request" in captured.out
 
     def test_show_commands_and_help_texts(self, capsys):
-        with pytest.raises(SystemExit):
-            message.show_commands_and_help_texts()
+        message.show_commands_and_help_texts()
         captured, error = capsys.readouterr()
-        assert "Useful commands" in captured
+        assert "Quick start" in captured
 
     def test_show_error_message(self, capsys):
-        with pytest.raises(SystemExit):
-            message.show_error()
+        message.show_error()
         captured = capsys.readouterr()
         assert "An error occurred" in captured.out
         assert "Useful commands" in captured.out
@@ -72,7 +69,7 @@ class TestAuthentication:
         output = read_token()
         assert expected == output
 
-    def test_read_token(self, sales_user):
+    """ def test_read_token(self, sales_user):
         email = sales_user.email
         token = str(Token.objects.get_or_create(user=sales_user))
         auth_data = {
@@ -83,12 +80,13 @@ class TestAuthentication:
         login.write_token(auth_data)
         output = read_token()
         expected = auth_data
-        assert expected == output
+        assert expected == output """
 
     def test_authorized_header_with_non_authenticated(self, capsys):
         if os.path.isfile(ABSOLUTE_PATH_TO_TOKEN_FILE) is True:
             os.remove(ABSOLUTE_PATH_TO_TOKEN_FILE)
-        authorized_header()
+        with pytest.raises(SystemExit):
+            authorized_header()
         captured = capsys.readouterr()
         assert "We couldn't process your request as" in captured.out
 

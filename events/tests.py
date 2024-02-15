@@ -14,13 +14,14 @@ class TestEventsModels:
 
     def test_client_details(self, event, signed_contract):
         assert event.client_name == signed_contract.client.full_name
-        assert event.client_phone == "There is no phone number entered for the client."
+        assert event.client_phone == "Data unavailable."
         assert event.client_email == signed_contract.client.email
 
 
 @pytest.mark.django_db
 class TestEventsViews:
-    EVENT_LIST_URL = reverse("events-list")
+    def setup_method(self):
+        self.EVENT_LIST_URL = reverse("events-list")
 
     def test_sales_user_list_access(self, sales_user, sales_user_authenticated_client):
         response = sales_user_authenticated_client.get(self.EVENT_LIST_URL)
@@ -44,8 +45,10 @@ class TestEventsViews:
             "start_date": datetime.datetime(2024, 5, 21),
             "end_date": datetime.datetime(2024, 5, 29),
             "contract": signed_contract2.id,
+            "support_contact": "",
         }
         response = sales_user2_authenticated_client.post(self.EVENT_LIST_URL, data)
+        print(response)
         created_event_id = response.data.get("id")
         created_event = Event.objects.get(id=created_event_id)
 
