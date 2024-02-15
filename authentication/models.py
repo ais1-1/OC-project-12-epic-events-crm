@@ -38,7 +38,8 @@ class UserManager(BaseUserManager):
     def create_superuser(self, email, password=None, **extra_fields):
         # Set the first Team instance, ie Management, as default value for role
         extra_fields.setdefault("role", Team.objects.get_or_create(pk=1)[0])
-
+        extra_fields.setdefault("first_name", "Epic")
+        extra_fields.setdefault("last_name", "Admin")
         # Create super user by calling create_user
         return self.create_user(email, password, **extra_fields)
 
