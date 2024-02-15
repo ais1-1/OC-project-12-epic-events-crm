@@ -5,10 +5,12 @@ from rest_framework import status
 from rich.prompt import Prompt
 
 
+from teams.models import Team
 from utils.common import (
     get_absolute_url,
     request_response_data,
     validate_client_email_input,
+    get_connected_user,
 )
 from utils.interface.console_style import (
     custom_theme,
@@ -52,6 +54,21 @@ class Command(RichCommand):
 
     def handle(self, *args, **options):
         """Handles 'client' command"""
+
+        connected_user = get_connected_user()
+        connected_user_role = connected_user.role
+        permitted = False
+
+        if connected_user_role == Team.get_sales_team():
+            permitted = True
+        else:
+            self.console.print(
+                f"[bold]Note that a {connected_user_role} team member does not have permission"
+                + " to create, delete or edit a client.[/bold] [success]However, "
+                + "you can read the details of clients.[/success]",
+                style="warning",
+            )
+            permitted = False
 
         if options["list"]:
             response, auth_data = request_response_data(CLIENTS_URL, "read")
@@ -132,11 +149,11 @@ class Command(RichCommand):
             else:
                 for data in response_dict:
                     self.console.print(
-                        f"[red1]{data}[/red1]: {response_dict[data][0]}",
+                        f"[red1]{data}[/red1]: {response_dict[data]}",
                         style="warning",
                     )
 
-        elif options["create"]:
+        elif options["create"] and permitted:
 
             client_email = prompt_for_email_with_validation(text="client")
             client_last_name = prompt_for_required_string("last name").upper()
@@ -198,8 +215,12 @@ class Command(RichCommand):
                         style="warning",
                     )
 
-        elif options["delete"]:
-
+        elif options["delete"] and permitted:
+            self.console.print(
+                "[bold]Please note that you can delete a client only"
+                + " if you are the contact.[/bold]",
+                style="warning",
+            )
             user_input_invalid = True
 
             while user_input_invalid:
@@ -223,11 +244,17 @@ class Command(RichCommand):
                 response_dict = response.json()
                 for data in response_dict:
                     self.console.print(
-                        f"[red1]{data}[/red1]: {response_dict[data][0]}",
+                        f"[red1]{data}[/red1]: {response_dict[data]}",
                         style="warning",
                     )
 
-        elif options["update"]:
+        elif options["update"] and permitted:
+
+            self.console.print(
+                "[bold]Please note that you can edit a client only if you are the contact.[/bold]",
+                style="warning",
+            )
+
             user_input_invalid = True
 
             while user_input_invalid:
@@ -299,3 +326,12 @@ class Command(RichCommand):
                 self.console.print(table)
             elif response.status_code == status.HTTP_403_FORBIDDEN:
                 self.console.print(response_dict["detail"], style="forbidden")
+            else:
+                for data in response_dict:
+                    self.console.print(
+                        f"[red1]{data}[/red1]: {response_dict[data]}",
+                        style="warning",
+                    )
+
+        else:
+            exit()

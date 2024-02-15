@@ -4,10 +4,12 @@ from rich.console import Console
 from rest_framework import status
 from rich.prompt import Prompt
 
+from teams.models import Team
 from utils.common import (
     get_absolute_url,
     request_response_data,
     validate_user_email_input,
+    get_connected_user,
 )
 from utils.interface.console_style import (
     custom_theme,
@@ -55,6 +57,16 @@ class Command(RichCommand):
 
     def handle(self, *args, **options):
         """Handles 'user' command"""
+        connected_user = get_connected_user()
+        connected_user_role = connected_user.role
+
+        if connected_user_role != Team.get_management_team():
+            self.console.print(
+                f"Sorry, a {connected_user_role} team member "
+                + "does not have permission to do any of the actions related a user.",
+                style="warning",
+            )
+            exit()
 
         if options["list"]:
             response, auth_data = request_response_data(USERS_URL, "read")
