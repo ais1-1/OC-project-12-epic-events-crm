@@ -291,7 +291,7 @@ class Command(RichCommand):
             else:
                 for data in response_dict:
                     self.console.print(
-                        f"[red1]{data}[/red1]: {response_dict[data][0]}",
+                        f"[red1]{data}[/red1]: {response_dict[data]}",
                         style="warning",
                     )
 

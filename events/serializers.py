@@ -19,7 +19,9 @@ class EventSerializer(serializers.ModelSerializer):
         pk_field=serializers.UUIDField(format="hex"),
     )
     support_contact = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.filter(role=Team.get_support_team()), allow_null=True
+        queryset=User.objects.filter(role=Team.get_support_team()),
+        allow_null=True,
+        required=False,
     )
 
     start_date = serializers.DateTimeField(required=True, format="%Y-%m-%d %H:%M")

@@ -57,7 +57,6 @@ class TestAuthenticationModels:
 
 @pytest.mark.django_db
 class TestLogin:
-    LOGIN_URL = reverse("obtain_token")
 
     def test_obtain_token_url(self):
         # Get url from name
@@ -66,7 +65,7 @@ class TestLogin:
         assert url == "/obtain-token/"
         assert resolve(url).func, CustomObtainAuthTokenView
 
-    def test_login_with_valid_credentials(self, sales_user, api_client):
+    def test_login_with_valid_credentials(self, sales_user, api_client, LOGIN_URL):
         password = secrets.token_hex(10)
         sales_user.set_password(password)
         sales_user.save()
@@ -74,11 +73,11 @@ class TestLogin:
             "email": sales_user.email,
             "password": password,
         }
-        response = api_client.post(self.LOGIN_URL, data, timeout=5000)
+        response = api_client.post(LOGIN_URL, data, timeout=5000)
         assert response.status_code == status.HTTP_200_OK
         assert "token" in response.data.get("data").keys()
 
-    def test_login_with_invalid_email(self, sales_user, api_client):
+    def test_login_with_invalid_email(self, sales_user, api_client, LOGIN_URL):
         password = secrets.token_hex(10)
         sales_user.set_password(password)
         sales_user.save()
@@ -87,29 +86,30 @@ class TestLogin:
             "email": email,
             "password": password,
         }
-        response = api_client.post(self.LOGIN_URL, data, timeout=5000)
+        response = api_client.post(LOGIN_URL, data, timeout=5000)
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
         assert "We couldn't find a user with these credentials" in response.data.get(
             "message"
         )
 
-    def test_login_without_credentials(self, api_client):
+    def test_login_without_credentials(self, api_client, LOGIN_URL):
         data = {
             "email": "",
             "password": "",
         }
-        response = api_client.post(self.LOGIN_URL, data, timeout=5000)
+        response = api_client.post(LOGIN_URL, data, timeout=5000)
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert "bad request" in response.data.get("message")
 
 
 @pytest.mark.django_db
 class TestLogout:
-    LOGOUT_URL = reverse("logout")
 
-    def test_logout_authenticated(self, sales_user, sales_user_authenticated_client):
+    def test_logout_authenticated(
+        self, sales_user, sales_user_authenticated_client, LOGOUT_URL
+    ):
 
-        response = sales_user_authenticated_client.post(self.LOGOUT_URL)
+        response = sales_user_authenticated_client.post(LOGOUT_URL)
 
         assert response.status_code == status.HTTP_200_OK
         # Test if the token is deleted
@@ -121,18 +121,21 @@ class TestLogout:
 
 @pytest.mark.django_db
 class TestUserViews:
-    USERS_URL = reverse("users-list")
 
-    def test_sales_user_access(self, sales_user, sales_user_authenticated_client):
-        response = sales_user_authenticated_client.get(self.USERS_URL)
+    def test_sales_user_access(
+        self, sales_user, sales_user_authenticated_client, USERS_URL
+    ):
+        response = sales_user_authenticated_client.get(USERS_URL)
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
-    def test_superuser_access(self, superuser, superuser_authenticated_client):
-        response = superuser_authenticated_client.get(self.USERS_URL)
+    def test_superuser_access(
+        self, superuser, superuser_authenticated_client, USERS_URL
+    ):
+        response = superuser_authenticated_client.get(USERS_URL)
         assert response.status_code == status.HTTP_200_OK
 
 
-@pytest.mark.django_db(transaction=True)
+@pytest.mark.django_db
 class TestAuthenticationCommands:
     LOGIN_COMMAND = "login"
     LOGOUT_COMMAND = "logout"
@@ -142,12 +145,15 @@ class TestAuthenticationCommands:
         self.email = "test@create.com"
         self.password = "àyxauibép"
 
-    def test_login(self):
+    def test_login(self, sales_user):
+        password = "àyxauibép"
+        sales_user.set_password(password)
+        sales_user.save()
         out = StringIO()
         call_command(
             self.LOGIN_COMMAND,
-            f"--email={self.email}",
-            f"--password={self.password}",
+            f"--email={sales_user.email}",
+            f"--password={sales_user.password}",
             stdout=out,
         )
         command_out = out.getvalue()

@@ -383,7 +383,7 @@ def prompt_for_event_contract_id():
             contract_id = Prompt.ask(
                 "[green]Enter contract id[/green]",
                 choices=contract_id_choices,
-                show_choices=True,
+                show_choices=False,
             )
         else:
             console.print(
