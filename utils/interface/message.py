@@ -11,6 +11,7 @@ from django.contrib.auth import get_user_model
 from rich import box
 from rich.table import Table
 from rich.padding import Padding
+from django.core.management.base import CommandError
 
 from contracts.models import Contract
 from clients.models import Client
@@ -109,15 +110,28 @@ def prompt_for_password_with_validation(
         if not change_password:
             return current_password
 
-    password = ""
-    while password.strip() == "":
-        password = Prompt.ask("[green]Enter password[/green]", password=True)
+    MAX_TRIES = 3
+    count = 0
+    p1, p2 = 1, 2  # To make them initially mismatch.
+    password_validated = False
+    while (p1 != p2 or not password_validated) and count < MAX_TRIES:
+        p1 = Prompt.ask("[green]Enter password[/green]", password=True)
+        p2 = Prompt.ask("[green]Enter password (again)[/green]", password=True)
+        if p1 != p2:
+            console.print("Passwords do not match. Please try again.", style="warning")
+            count += 1
+            # Don't validate passwords that don't match.
+            continue
         try:
-            validate_password(password)
-            return password
-        except ValidationError as e:
-            console.print(f"[prompt.invalid]{str(e)}")
-            password = ""
+            validate_password(p2)
+            password_validated = True
+            return p2
+        except ValidationError as err:
+            console.print(f"[prompt.invalid]{str(err)}")
+            count += 1
+
+    if count == MAX_TRIES:
+        raise CommandError("Aborting password change after %s attempts" % (count))
 
 
 def prompt_for_required_string(
