@@ -3,28 +3,38 @@ import requests
 from functools import partial
 from django_rich.management import RichCommand
 from rich.console import Console
+from django.conf import settings
+from django.urls import reverse
 
 from utils.authentication import ABSOLUTE_PATH_TO_TOKEN_FILE, authorized_header
-from utils.common import get_absolute_url
 from utils.interface.console_style import custom_theme, draw_title, draw_subtitle
 
-LOGOUT_URL = get_absolute_url("logout")
 
-
-def request_logout():
+def request_logout(
+    token_file=ABSOLUTE_PATH_TO_TOKEN_FILE, client=None, test_token=None
+):
     """Logs out the current user"""
     draw_title()
     draw_subtitle("Logout")
-    headers, auth_data = authorized_header()
-    if os.path.isfile(ABSOLUTE_PATH_TO_TOKEN_FILE) is True:
+    headers, auth_data = authorized_header(test_token, token_file)
+    if os.path.isfile(token_file) is True:
         # Delete the credentials file
-        os.remove(ABSOLUTE_PATH_TO_TOKEN_FILE)
+        os.remove(token_file)
 
-    response = requests.post(url=LOGOUT_URL, headers=headers, timeout=5000)
+    # For test
+    if client:
+        url = reverse("logout")
+        response = client.post(url, headers=headers, timeout=5000)
+    else:
+        response = requests.post(
+            url=settings.BASE_URL.strip("/") + reverse("logout"),
+            headers=headers,
+            timeout=5000,
+        )
     return response
 
 
-class Command(RichCommand):
+class Command(RichCommand):  # pragma: no cover
     make_rich_console = partial(Console, theme=custom_theme)
 
     def handle(self, *args, **options):

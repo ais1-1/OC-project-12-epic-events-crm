@@ -54,7 +54,7 @@ def request_get_token(email="", password="", client=None):
             console.print(f"[prompt.invalid]{str(e)}")
             email = ""
 
-    while password.strip() == "":
+    while password.strip() == "":  # pragma: no cover
         password = Prompt.ask("[green]Enter password[/green]", password=True)
         try:
             validate_password(password)
@@ -92,18 +92,18 @@ def request_get_token(email="", password="", client=None):
     return auth_data
 
 
-def write_token(auth_data):
+def write_token(auth_data, token_file=ABSOLUTE_PATH_TO_TOKEN_FILE):
     """Writes credentials (email, password and token) with empty password to the json file"""
 
     # removes password from data to be written
     write_data = auth_data
     write_data["password"] = ""
 
-    with open(ABSOLUTE_PATH_TO_TOKEN_FILE, "w", encoding="utf-8") as json_file:
+    with open(token_file, "w", encoding="utf-8") as json_file:
         json.dump(auth_data, json_file, indent=4)
 
 
-class Command(RichCommand):
+class Command(RichCommand):  # pragma: no cover
 
     make_rich_console = partial(Console, theme=custom_theme)
 
