@@ -3,17 +3,13 @@ import secrets
 import datetime
 from rest_framework.test import APIClient
 from django.urls import reverse
-from django.conf import settings
 from django.utils.timezone import make_aware
 
 from clients.models import Client
 from teams.models import Team
 from contracts.models import Contract
 from events.models import Event
-
-ABSOLUTE_PATH_TO_TOKEN_FILE = (
-    str(settings.BASE_DIR) + "/" + str(settings.TOKEN_FILENAME) + ".json"
-)
+from authentication.management.commands.login import request_get_token, write_token
 
 
 @pytest.fixture(autouse=True)
@@ -23,11 +19,12 @@ def api_client():
 
 
 @pytest.fixture(autouse=True)
-def use_test_token_file(settings):
+def test_token_file(settings):
     settings.TOKEN_FILENAME = "testsecret.json"
+    return settings.TOKEN_FILENAME
 
 
-@pytest.fixture()
+@pytest.fixture
 def superuser(django_user_model):
     user = django_user_model.objects.create_superuser(
         email="manager@epicevents.com",
@@ -36,6 +33,16 @@ def superuser(django_user_model):
         last_name=secrets.token_hex(10),
     )
     return user
+
+
+@pytest.fixture
+def superuser_cli_authenticated(superuser, api_client, test_token_file):
+    password = "bépo1234"
+    auth_data = request_get_token(
+        email=superuser.email, password=password, client=api_client
+    )
+    write_token(auth_data, test_token_file)
+    return auth_data
 
 
 @pytest.fixture
@@ -110,6 +117,22 @@ def client_without_contact():
 def signed_contract(epic_client):
     contract = Contract.objects.create(
         total_amount=1500, signed=True, client=epic_client
+    )
+    return contract
+
+
+@pytest.fixture
+def unsigned_contract(epic_client):
+    contract = Contract.objects.create(
+        total_amount=1500, signed=False, client=epic_client
+    )
+    return contract
+
+
+@pytest.fixture
+def unpaid_contract(epic_client):
+    contract = Contract.objects.create(
+        total_amount=1500, amount_due=100, signed=False, client=epic_client
     )
     return contract
 

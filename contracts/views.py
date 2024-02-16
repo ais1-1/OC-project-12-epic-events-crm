@@ -73,7 +73,3 @@ class ContractViewSet(ModelViewSet):
                 "message": "All the signed contracts have associated events.",
             }
             return Response(response, status=status.HTTP_204_NO_CONTENT)
-        else:
-            return HttpResponseNotFound(
-                "Sorry, we couldn't find data corresponding your request."
-            )

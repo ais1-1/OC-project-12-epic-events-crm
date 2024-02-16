@@ -4,6 +4,7 @@ from rest_framework import status
 from django.http import HttpResponseNotFound
 
 from .models import Contract
+from events.models import Event
 
 
 @pytest.mark.django_db
@@ -46,6 +47,11 @@ class TestContractsModels:
 class TestContractsViews:
     def setup_method(self):
         self.CONTRACT_LIST_URL = reverse("contracts-list")
+        self.OWN_ACTION_URL = self.CONTRACT_LIST_URL + "own/"
+        self.UNSIGNED_ACTION_URL = self.CONTRACT_LIST_URL + "unsigned/"
+        self.UNPAID_ACTION_URL = self.CONTRACT_LIST_URL + "unpaid/"
+        self.SIGNED_ACTION_URL = self.CONTRACT_LIST_URL + "signed/"
+        self.WITHOUT_EVENT_ACTION_URL = self.CONTRACT_LIST_URL + "without_event/"
 
     def test_sales_user_list_access(self, sales_user, sales_user_authenticated_client):
         response = sales_user_authenticated_client.get(self.CONTRACT_LIST_URL)
@@ -148,3 +154,80 @@ class TestContractsViews:
         assert response.data[0]["amount_due"] == "{:.2f}".format(
             signed_contract2.amount_due
         )
+
+    def test_own_action_no_contracts(self, sales_user, sales_user_authenticated_client):
+        response = sales_user_authenticated_client.get(self.OWN_ACTION_URL)
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_own_action_with_contracts(
+        self, sales_user, signed_contract, sales_user_authenticated_client
+    ):
+        response = sales_user_authenticated_client.get(self.OWN_ACTION_URL)
+        response_dict = response.json()
+        assert response.status_code == status.HTTP_200_OK
+        assert response_dict[0]["sales_contact"] == sales_user.id
+        assert response_dict[0]["id"] == str(signed_contract.id)
+
+    def test_unsigned_no_contracts(self, sales_user, sales_user_authenticated_client):
+        response = sales_user_authenticated_client.get(self.UNSIGNED_ACTION_URL)
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_unsigned_with_contracts(
+        self, sales_user, unsigned_contract, sales_user_authenticated_client
+    ):
+        response = sales_user_authenticated_client.get(self.UNSIGNED_ACTION_URL)
+        response_dict = response.json()
+        assert response.status_code == status.HTTP_200_OK
+        assert response_dict[0]["sales_contact"] == sales_user.id
+        assert response_dict[0]["id"] == str(unsigned_contract.id)
+        assert response_dict[0]["signed"] is False
+
+    def test_signed_no_contracts(self, sales_user, sales_user_authenticated_client):
+        response = sales_user_authenticated_client.get(self.SIGNED_ACTION_URL)
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_signed_with_contracts(
+        self, sales_user, signed_contract, sales_user_authenticated_client
+    ):
+        response = sales_user_authenticated_client.get(self.SIGNED_ACTION_URL)
+        response_dict = response.json()
+        assert response.status_code == status.HTTP_200_OK
+        assert response_dict[0]["sales_contact"] == sales_user.id
+        assert response_dict[0]["id"] == str(signed_contract.id)
+        assert response_dict[0]["signed"] is True
+
+    def test_unpaid_no_contracts(self, sales_user, sales_user_authenticated_client):
+        response = sales_user_authenticated_client.get(self.UNPAID_ACTION_URL)
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_unpaid_with_contracts(
+        self, sales_user, unpaid_contract, sales_user_authenticated_client
+    ):
+        response = sales_user_authenticated_client.get(self.UNPAID_ACTION_URL)
+        response_dict = response.json()
+        assert response.status_code == status.HTTP_200_OK
+        assert response_dict[0]["sales_contact"] == sales_user.id
+        assert response_dict[0]["id"] == str(unpaid_contract.id)
+        assert float(response_dict[0]["amount_due"]) > 0.00
+
+    def test_without_event_no_contracts(
+        self, sales_user, sales_user_authenticated_client
+    ):
+        response = sales_user_authenticated_client.get(self.WITHOUT_EVENT_ACTION_URL)
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+
+    def test_without_event_with_signed_contract(
+        self, sales_user, signed_contract, sales_user_authenticated_client
+    ):
+        response = sales_user_authenticated_client.get(self.WITHOUT_EVENT_ACTION_URL)
+        response_dict = response.json()
+        events = Event.objects.all()
+        signed_contract_has_event = False
+        for event in events:
+            if event.contract.id == signed_contract.id:
+                signed_contract_has_event = True
+        assert response.status_code == status.HTTP_200_OK
+        assert signed_contract_has_event is False
+        assert response_dict[0]["sales_contact"] == sales_user.id
+        assert response_dict[0]["id"] == str(signed_contract.id)
+        assert response_dict[0]["signed"] is True

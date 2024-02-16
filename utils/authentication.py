@@ -18,22 +18,22 @@ ABSOLUTE_PATH_TO_TOKEN_FILE = (
 )
 
 
-def read_token() -> dict:
+def read_token(token_file=ABSOLUTE_PATH_TO_TOKEN_FILE) -> dict:
     """Get token from credential json file"""
     # checks if file exists
-    if os.path.isfile(ABSOLUTE_PATH_TO_TOKEN_FILE) is False:
+    if os.path.isfile(token_file) is False:
         return None
 
-    with open(ABSOLUTE_PATH_TO_TOKEN_FILE, "r", encoding="utf-8") as json_file:
+    with open(token_file, "r", encoding="utf-8") as json_file:
         loaded_data = json.load(json_file)
 
     return loaded_data
 
 
-def authorized_header() -> dict:
-    access_token = read_token()
+def authorized_header(test_token=None, token_file=ABSOLUTE_PATH_TO_TOKEN_FILE) -> dict:
+    access_token = read_token(token_file)
 
-    if access_token and validate_token(access_token):
+    if access_token and validate_token(access_token, test_token):
 
         headers = {
             "Content-Type": "application/json",
@@ -48,8 +48,11 @@ def authorized_header() -> dict:
         exit()
 
 
-def validate_token(credentials):
-    token = Token.objects.get(user=User.objects.get(email=credentials["email"]))
+def validate_token(credentials, test_token=None):
+    if test_token is not None:
+        token = test_token
+    else:
+        token = Token.objects.get(user=User.objects.get(email=credentials["email"]))
     utc_now = datetime.datetime.utcnow()
     utc_now = utc_now.replace(tzinfo=pytz.utc)
     if str(token) is not credentials[

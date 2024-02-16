@@ -1,5 +1,6 @@
 import os
 import pytest
+import io
 from django.conf import settings
 from django.urls import reverse
 from django.contrib.auth import get_user_model
@@ -56,6 +57,81 @@ class TestInterface:
         captured = capsys.readouterr()
         assert "An error occurred" in captured.out
         assert "Useful commands" in captured.out
+
+    def test_ask_for_user_re_input(self, capsys, monkeypatch):
+        responses = iter(["y", "n"])
+        monkeypatch.setattr("builtins.input", lambda: next(responses))
+        # Answers y
+        output1 = message.ask_for_user_re_input()
+        captured1 = capsys.readouterr()
+        # Answers 'n'
+        with pytest.raises(SystemExit):
+            message.ask_for_user_re_input()
+        captured2 = capsys.readouterr()
+        assert "Do you want to retry" in captured1.out
+        assert "Do you want to retry" in captured2.out
+        assert output1 == ""
+        assert "OK. Bye" in captured2.out
+
+    def test_prompt_for_email_with_validation_not_update_data(
+        self, capsys, monkeypatch
+    ):
+        valid_email = "validemail@test.com"
+        invalid_email_input = "invalidemail"
+        responses = iter([valid_email, invalid_email_input, "n"])
+        monkeypatch.setattr("builtins.input", lambda: next(responses))
+        output1 = message.prompt_for_email_with_validation()
+        with pytest.raises(SystemExit):
+            message.prompt_for_email_with_validation()
+        capture = capsys.readouterr()
+
+        assert output1 == valid_email
+        assert "Enter a valid email" in capture.out
+        assert "Do you want to retry" in capture.out
+
+    def test_prompt_for_email_with_validation_update_data(self, capsys, monkeypatch):
+        valid_email = "validemail@test.com"
+        monkeypatch.setattr("sys.stdin", io.StringIO("n"))
+        output1 = message.prompt_for_email_with_validation(
+            current_email=valid_email, update_data=True, text="test"
+        )
+        capture = capsys.readouterr()
+
+        assert output1 == valid_email
+        assert "Do you want to update" in capture.out
+
+    def test_prompt_for_password_with_validation_update_data(self, capsys, monkeypatch):
+        valid_password = "testsecret123"
+        monkeypatch.setattr("sys.stdin", io.StringIO("n"))
+        output1 = message.prompt_for_password_with_validation(
+            current_password=valid_password, update_data=True
+        )
+        capture = capsys.readouterr()
+
+        assert output1 == valid_password
+        assert "Do you want to change the password" in capture.out
+
+    def test_prompt_for_required_string(self, capsys, monkeypatch):
+        field_name = "test field"
+        field_value = "test value"
+        monkeypatch.setattr("sys.stdin", io.StringIO(field_value))
+        output = message.prompt_for_required_string(field_name)
+        capture = capsys.readouterr()
+
+        assert output == field_value
+        assert f"Enter {field_name}" in capture.out
+
+    def test_prompt_for_required_string_update_data(self, capsys, monkeypatch):
+        field_name = "test field"
+        field_value = "test value"
+        monkeypatch.setattr("sys.stdin", io.StringIO("n"))
+        output = message.prompt_for_required_string(
+            field_name, current_text=field_value, update_data=True
+        )
+        capture = capsys.readouterr()
+
+        assert output == field_value
+        assert f"changes to {field_name}" in capture.out
 
 
 class TestAuthentication:

@@ -114,7 +114,9 @@ def prompt_for_password_with_validation(
     count = 0
     p1, p2 = 1, 2  # To make them initially mismatch.
     password_validated = False
-    while (p1 != p2 or not password_validated) and count < MAX_TRIES:
+    while (
+        p1 != p2 or not password_validated
+    ) and count < MAX_TRIES:  # pragma: no cover
         p1 = Prompt.ask("[green]Enter password[/green]", password=True)
         p2 = Prompt.ask("[green]Enter password (again)[/green]", password=True)
         if p1 != p2:
