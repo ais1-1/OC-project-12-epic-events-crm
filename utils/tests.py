@@ -21,6 +21,109 @@ User = get_user_model()
 
 class TestInterface:
 
+    def test_prompt_for_date(self, capsys, monkeypatch):
+        year = "2024"
+        month = "2"
+        day = "1"
+        field_name = "test field"
+        responses = iter(["y", year, month, day])
+        monkeypatch.setattr("builtins.input", lambda: next(responses))
+        result = message.prompt_for_date(field_name=field_name)
+        capture = capsys.readouterr()
+
+        assert f"want to enter the {field_name}" in capture.out
+        assert result == f"{year}-0{month}-0{day}"
+
+    def test_prompt_for_date_include_time(self, capsys, monkeypatch):
+        year = "2024"
+        month = "2"
+        day = "1"
+        hour = "14"
+        minute = "2"
+        field_name = "test field"
+        responses = iter(["y", year, month, day, hour, minute])
+        monkeypatch.setattr("builtins.input", lambda: next(responses))
+        result = message.prompt_for_date(field_name=field_name, include_time=True)
+        capture = capsys.readouterr()
+
+        assert f"want to enter the {field_name}" in capture.out
+        assert result == f"{year}-0{month}-0{day} {hour}:0{minute}"
+
+    def test_prompt_for_date_invalid_date(self, capsys, monkeypatch):
+        year = "2024"
+        month = "2"
+        day = "30"
+        day2 = "2"
+        field_name = "test field"
+        responses = iter(["y", year, month, day, "y", year, month, day2])
+        monkeypatch.setattr("builtins.input", lambda: next(responses))
+
+        result = message.prompt_for_date(field_name=field_name, required=True)
+        capture = capsys.readouterr()
+
+        assert f"want to enter the {field_name}" in capture.out
+        assert result == f"{year}-0{month}-0{day2}"
+
+    def test_prompt_for_date_not_required(self, capsys, monkeypatch):
+        field_name = "test field"
+        monkeypatch.setattr("sys.stdin", io.StringIO("n"))
+
+        result = message.prompt_for_date(field_name=field_name)
+        capture = capsys.readouterr()
+
+        assert f"want to enter the {field_name}" in capture.out
+        assert result is None
+
+    def test_prompt_for_date_required(self, capsys, monkeypatch):
+        year = "2024"
+        month = "2"
+        day2 = "2"
+        field_name = "test field"
+        responses = iter(["n", "y", "y", year, month, day2, "\n"])
+        monkeypatch.setattr("builtins.input", lambda: next(responses))
+        result = message.prompt_for_date(field_name=field_name, required=True)
+        capture = capsys.readouterr()
+
+        assert f"want to enter the {field_name}" in capture.out
+        assert "This field is required to continue" in capture.out
+        assert result == f"{year}-0{month}-0{day2}"
+
+    def test_prompt_for_decimal_value(self, capsys, monkeypatch):
+        invalid_input = "0123456789101112"
+        valid_input = "12"
+        field_name = "test field"
+        responses = iter([invalid_input, "y", valid_input])
+        monkeypatch.setattr("builtins.input", lambda: next(responses))
+        result = message.prompt_for_decimal_value(field_name=field_name)
+        capture = capsys.readouterr()
+        assert result == 12.00
+        assert f"Enter the {field_name}" in capture.out
+        assert "Ensure that there are no more than 12 digits" in capture.out
+        assert "retry" in capture.out
+
+    def test_prompt_for_decimal_value_update(self, capsys, monkeypatch):
+        field_name = "test field"
+        current_amount = 13.00
+        monkeypatch.setattr("sys.stdin", io.StringIO("n"))
+        result = message.prompt_for_decimal_value(
+            field_name=field_name, update_data=True, current_amount=current_amount
+        )
+        capture = capsys.readouterr()
+        assert result == current_amount
+        assert f"want to update {field_name}" in capture.out
+
+    def test_prompt_for_decimal_value_default(self, capsys, monkeypatch):
+        field_name = "test field"
+        default = 20.00
+        monkeypatch.setattr("sys.stdin", io.StringIO("\n"))
+        result = message.prompt_for_decimal_value(
+            field_name=field_name, default_value=default
+        )
+        capture = capsys.readouterr()
+        assert result == default
+        assert f"{default}" in capture.out
+        assert f"the {field_name}" in capture.out
+
     def test_draw_title(self, capsys):
         console_style.draw_title()
         captured = capsys.readouterr()
