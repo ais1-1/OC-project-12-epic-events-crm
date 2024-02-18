@@ -9,6 +9,8 @@ from rest_framework import status
 
 """ from authentication.management.commands import login """
 from teams.models import Team
+from events.models import Event
+from contracts.models import Contract
 from .interface import console_style, message
 from .authentication import ABSOLUTE_PATH_TO_TOKEN_FILE, read_token, authorized_header
 from . import common
@@ -188,6 +190,107 @@ class TestInterface:
         capture = capsys.readouterr()
         assert result == signed_contract
         assert "Enter contract id" in capture.out
+
+    def test_prompt_for_client_from_email(self, capsys, monkeypatch, epic_client):
+        monkeypatch.setattr("sys.stdin", io.StringIO(epic_client.email))
+        result = message.prompt_for_client_from_email()
+        capture = capsys.readouterr()
+        assert result == epic_client
+        assert "Enter the client's email" in capture.out
+
+    def test_prompt_for_event_id(self, capsys, monkeypatch, event):
+        monkeypatch.setattr("sys.stdin", io.StringIO(str(event.id)))
+        result = message.prompt_for_event_id()
+        capture = capsys.readouterr()
+        assert result == event
+        assert "Enter the event's id" in capture.out
+
+    def test_prompt_for_positive_integer(self, capsys, monkeypatch):
+        invalid_input = "-12"
+        valid_input = "10"
+        field_name = "test field"
+        responses = iter([invalid_input, "y", valid_input])
+        monkeypatch.setattr("builtins.input", lambda: next(responses))
+        result = message.prompt_for_positive_integer(field_name=field_name)
+        capture = capsys.readouterr()
+        assert result == int(valid_input)
+        assert f"Enter the {field_name}" in capture.out
+        assert f"Invalid {field_name}" in capture.out
+        assert "retry" in capture.out
+
+    def test_prompt_for_positive_integer_update(self, capsys, monkeypatch):
+        field_name = "Update test"
+        current_value = 10
+        monkeypatch.setattr("sys.stdin", io.StringIO("n"))
+        result = message.prompt_for_positive_integer(
+            field_name=field_name, current_value=current_value, update_data=True
+        )
+        capture = capsys.readouterr()
+        assert result == current_value
+        assert f"want to update {field_name}" in capture.out
+
+    def test_prompt_for_event_status(self, capsys, monkeypatch):
+        # List of tuple
+        event_status_choices_tup = list(Event.EVENT_STATUS)
+        # Using map for 0 index
+        event_status_choices = list(map(lambda x: x[0], event_status_choices_tup))
+        invalid_input = "status"
+        valid_input = event_status_choices[0]
+        responses = iter([invalid_input, valid_input])
+        monkeypatch.setattr("builtins.input", lambda: next(responses))
+        result = message.prompt_for_event_status()
+        capture = capsys.readouterr()
+        assert result == valid_input
+        assert "Enter event status" in capture.out
+        assert valid_input in capture.out
+        assert valid_input == "PLANNED"
+        assert "one of the available options" in capture.out
+
+    def test_prompt_for_event_status_update(self, capsys, monkeypatch):
+        monkeypatch.setattr("sys.stdin", io.StringIO("n"))
+        result = message.prompt_for_event_status(
+            current_status="COMPLETED", update_data=True
+        )
+        capture = capsys.readouterr()
+        assert result == "COMPLETED"
+        assert "change the status" in capture.out
+
+    def test_prompt_for_support_contract_id(self, capsys, monkeypatch, support_user):
+        invalid_input = "email"
+        valid_input = support_user.email
+        responses = iter([invalid_input, valid_input])
+        monkeypatch.setattr("builtins.input", lambda: next(responses))
+        result = message.prompt_for_support_contract_id()
+        capture = capsys.readouterr()
+
+        assert result == support_user.id
+        assert "one of the available options" in capture.out
+        assert "Enter the support contact email" in capture.out
+        assert support_user.email in capture.out
+
+    def test_prompt_for_support_contract_id_update(
+        self, capsys, monkeypatch, support_user
+    ):
+        monkeypatch.setattr("sys.stdin", io.StringIO("n"))
+        result = message.prompt_for_support_contract_id(
+            update_data=True, current_id=support_user.id
+        )
+        capture = capsys.readouterr()
+        assert result == support_user.id
+        assert "change the support team contact" in capture.out
+
+    def test_prompt_for_event_contract_id(self, capsys, event, signed_contract):
+        contract_id_choices = list(
+            Contract.objects.filter(signed=True)
+            .filter(event__isnull=True)
+            .values_list("id", flat=True)
+        )
+        with pytest.raises(SystemExit):
+            message.prompt_for_event_contract_id()
+        capture = capsys.readouterr()
+
+        assert "All the existing contracts have a connected" in capture.out
+        assert len(contract_id_choices) == 0
 
 
 class TestAuthentication:
