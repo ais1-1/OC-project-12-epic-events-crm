@@ -4,15 +4,15 @@ from django.urls import reverse
 from django.contrib.auth import get_user_model
 
 from clients.models import Client
-from utils.authentication import authorized_header
+from utils.authentication import authorized_header, ABSOLUTE_PATH_TO_TOKEN_FILE
 from utils.interface.message import show_invalid, ask_for_user_re_input
 from utils.interface.console_style import console
 
 User = get_user_model()
 
 
-def get_connected_user():
-    header, auth_data = authorized_header()
+def get_connected_user(test_token=None, token_file=ABSOLUTE_PATH_TO_TOKEN_FILE):
+    header, auth_data = authorized_header(test_token, token_file)
     connected_user_email = auth_data["email"]
     user = User.objects.get(email=connected_user_email)
     return user
@@ -29,6 +29,9 @@ def request_response_data(
     request_data: dict = None,
     object_id: int = None,
     filter: str = None,
+    client=None,
+    test_token=None,
+    token_file=ABSOLUTE_PATH_TO_TOKEN_FILE,
 ):
 
     absolute_url = root_url
@@ -39,28 +42,49 @@ def request_response_data(
     if filter:
         absolute_url = absolute_url + filter + "/"
 
-    headers, auth_data = authorized_header()
+    headers, auth_data = authorized_header(test_token=test_token, token_file=token_file)
 
     if operation == "read":
-        response = requests.get(url=absolute_url, headers=headers, timeout=5000)
+        if client:
+            response = client.get(
+                absolute_url, headers=headers, timeout=5000, format="json"
+            )
+        else:
+            response = requests.get(url=absolute_url, headers=headers, timeout=5000)
 
     elif operation == "create":
-        response = requests.post(
-            url=absolute_url, json=request_data, headers=headers, timeout=5000
-        )
+        if client:
+            response = client.post(
+                absolute_url, request_data, headers=headers, timeout=5000, format="json"
+            )
+
+        else:
+            response = requests.post(
+                url=absolute_url, json=request_data, headers=headers, timeout=5000
+            )
 
     elif operation == "delete":
         # force object id to be specified
         if object_id is None:
             return show_invalid()
-        response = requests.delete(
-            url=absolute_url, json=request_data, headers=headers, timeout=5000
-        )
+        if client:
+            response = client.delete(
+                absolute_url, request_data, headers=headers, timeout=5000, format="json"
+            )
+        else:
+            response = requests.delete(
+                url=absolute_url, json=request_data, headers=headers, timeout=5000
+            )
 
     elif operation == "update":
-        response = requests.patch(
-            url=absolute_url, json=request_data, headers=headers, timeout=5000
-        )
+        if client:
+            response = client.patch(
+                absolute_url, request_data, headers=headers, timeout=5000, format="json"
+            )
+        else:
+            response = requests.patch(
+                url=absolute_url, json=request_data, headers=headers, timeout=5000
+            )
     else:
         return show_invalid()
 

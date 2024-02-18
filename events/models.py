@@ -87,7 +87,7 @@ class Event(models.Model):
     def client_phone(self):
         if self.contract.client and self.contract.client.phone:
             return f"{self.contract.client.phone}"
-        elif not self.contract.client.phone:
+        elif self.contract.client and not self.contract.client.phone:
             return "Data unavailable."
         else:
             return "No client for the contract."

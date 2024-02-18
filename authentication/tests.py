@@ -149,6 +149,17 @@ class TestUserViews:
         response = superuser_authenticated_client.get(self.USERS_URL)
         assert response.status_code == status.HTTP_200_OK
 
+    def test_user_create(self, superuser_authenticated_client):
+        data = {
+            "email": "test@example.com",
+            "password": "bépoooé456",
+            "first_name": "firsttestname",
+            "last_name": "lasttestname",
+            "role": Team.get_sales_team().id,
+        }
+        response = superuser_authenticated_client.post(self.USERS_URL, data)
+        assert response.status_code == status.HTTP_201_CREATED
+
 
 @pytest.mark.django_db
 class TestAuthenticationCommands:

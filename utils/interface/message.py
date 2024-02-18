@@ -25,6 +25,7 @@ User = get_user_model()
 
 def show_invalid():
     console.print("Invalid request :sad: Please try again...", style="warning")
+    exit()
 
 
 def show_error():

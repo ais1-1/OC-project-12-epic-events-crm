@@ -43,8 +43,7 @@ class EventViewSet(ModelViewSet):
                     message = (
                         "Make sure that you are creating the event for your client."
                     )
-                else:
-                    message = "You are not authorized to do this action."
+
                 response = {
                     "status": status.HTTP_401_UNAUTHORIZED,
                     "message": message,

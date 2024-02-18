@@ -96,6 +96,7 @@ def epic_client(sales_user):
 def epic_client2(sales_user2):
     client = Client.objects.create(
         email=f"{secrets.token_hex(10)}@{secrets.token_hex(10)}.com",
+        phone="+33 621645233",
         first_name=secrets.token_hex(10),
         last_name=secrets.token_hex(10),
         sales_contact=sales_user2,
@@ -157,6 +158,14 @@ def unsigned_contract_without_contact(client_without_contact):
 def unsigned_contract_without_client(sales_user):
     contract = Contract.objects.create(
         total_amount=1500, signed=False, sales_contact=sales_user
+    )
+    return contract
+
+
+@pytest.fixture
+def signed_contract_without_client(sales_user):
+    contract = Contract.objects.create(
+        total_amount=1500, signed=True, sales_contact=sales_user
     )
     return contract
 
