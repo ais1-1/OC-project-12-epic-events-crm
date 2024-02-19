@@ -1,4 +1,5 @@
 import os
+import logging
 import datetime
 import pytz
 import json
@@ -22,6 +23,7 @@ def read_token(token_file=ABSOLUTE_PATH_TO_TOKEN_FILE) -> dict:
     """Get token from credential json file"""
     # checks if file exists
     if os.path.isfile(token_file) is False:
+        logging.warning("Token not found.")
         return None
 
     with open(token_file, "r", encoding="utf-8") as json_file:

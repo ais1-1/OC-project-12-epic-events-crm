@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from django.http import HttpResponseNotFound
 from rest_framework import status
 from django.db import transaction
+from sentry_sdk import capture_exception
 
 from .serializers import EventSerializer
 from .models import Event
@@ -30,6 +31,7 @@ class EventViewSet(ModelViewSet):
             if sales_contact == request.user and contract.signed:
                 serializer = self.get_serializer(data=request.data)
                 serializer.is_valid(raise_exception=True)
+                capture_exception()
                 self.perform_create(serializer)
                 headers = self.get_success_headers(serializer.data)
                 return Response(

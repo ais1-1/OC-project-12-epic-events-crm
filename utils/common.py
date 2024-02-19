@@ -1,4 +1,5 @@
 import requests
+import logging
 from django.conf import settings
 from django.urls import reverse
 from django.contrib.auth import get_user_model
@@ -86,6 +87,7 @@ def request_response_data(
                 url=absolute_url, json=request_data, headers=headers, timeout=5000
             )
     else:
+        logging.warning("Invalid operation.")
         return show_invalid()
 
     return response, auth_data

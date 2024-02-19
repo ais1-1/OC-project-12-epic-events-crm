@@ -1,3 +1,4 @@
+import logging
 from functools import partial
 from django_rich.management import RichCommand
 from rich.console import Console
@@ -143,6 +144,7 @@ class Command(RichCommand):
             elif response.status_code == status.HTTP_403_FORBIDDEN:
                 self.console.print(response_dict["detail"], style="forbidden")
             else:
+                logging.warning("Something went wrong.")
                 for data in response_dict:
                     self.console.print(
                         f"[red1]{data}[/red1]: {response_dict[data][0]}",
@@ -201,6 +203,7 @@ class Command(RichCommand):
             elif response.status_code == status.HTTP_403_FORBIDDEN:
                 self.console.print(response_dict["detail"], style="forbidden")
             else:
+                logging.warning("Something went wrong.")
                 for data in response_dict:
                     self.console.print(
                         f"[red1]{data}[/red1]: {response_dict[data]}",
@@ -289,6 +292,7 @@ class Command(RichCommand):
             elif response.status_code == status.HTTP_403_FORBIDDEN:
                 self.console.print(response_dict, style="forbidden")
             else:
+                logging.warning("Something went wrong.")
                 for data in response_dict:
                     self.console.print(
                         f"[red1]{data}[/red1]: {response_dict[data]}",
@@ -304,6 +308,10 @@ class Command(RichCommand):
             )
 
             if status.is_success(response.status_code):
+                logging.warning(
+                    f"Event {event.name} deletion",
+                    extra={"action by": auth_data["email"]},
+                )
                 draw_title(auth_data["email"])
                 self.console.print(
                     "The event is successfully deleted from the database.",
@@ -313,6 +321,7 @@ class Command(RichCommand):
                 response_dict = response.json()
                 self.console.print(response_dict["detail"], style="forbidden")
             else:
+                logging.warning("Something went wrong.")
                 response_dict = response.json()
                 for data in response_dict:
                     self.console.print(
@@ -423,6 +432,7 @@ class Command(RichCommand):
             elif response.status_code == status.HTTP_403_FORBIDDEN:
                 self.console.print(response_dict["detail"], style="forbidden")
             else:
+                logging.warning("Something went wrong.")
                 for data in response_dict:
                     self.console.print(
                         f"[red1]{data}[/red1]: {response_dict[data]}",
@@ -471,7 +481,7 @@ class Command(RichCommand):
                     style="warning",
                 )
             else:
-
+                logging.warning("Something went wrong.")
                 self.console.print(
                     f"{response.text}",
                     style="warning",
@@ -519,7 +529,7 @@ class Command(RichCommand):
                     style="warning",
                 )
             else:
-
+                logging.warning("Something went wrong.")
                 self.console.print(
                     f"{response.text}",
                     style="warning",
