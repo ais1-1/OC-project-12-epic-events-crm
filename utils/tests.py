@@ -281,6 +281,7 @@ class TestInterface:
         assert valid is True
         assert contract == signed_contract
 
+    @pytest.mark.django_db
     def test_validate_uuid_value_error(self, capsys):
         with pytest.raises(SystemExit):
             valid, contract = message.validate_uuid("pdovdjusn")
