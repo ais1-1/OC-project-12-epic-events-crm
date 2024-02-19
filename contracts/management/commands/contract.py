@@ -1,3 +1,4 @@
+import logging
 from functools import partial
 from django_rich.management import RichCommand
 from rich.console import Console
@@ -138,8 +139,10 @@ class Command(RichCommand):
                 draw_title(auth_data["email"])
                 self.console.print(table)
             elif response.status_code == status.HTTP_403_FORBIDDEN:
+                logging.warning("Forbidden endpoint.")
                 self.console.print(response_dict["detail"], style="forbidden")
             else:
+                logging.warning("Something went wrong.")
                 for data in response_dict:
                     self.console.print(
                         f"[red1]{data}[/red1]: {response_dict[data][0]}",
@@ -179,8 +182,10 @@ class Command(RichCommand):
                 draw_title(auth_data["email"])
                 self.console.print(table)
             elif response.status_code == status.HTTP_403_FORBIDDEN:
+                logging.warning("Forbidden endpoint.")
                 self.console.print(response_dict["detail"], style="forbidden")
             else:
+                logging.warning("Something went wrong.")
                 for data in response_dict:
                     self.console.print(
                         f"[red1]{data}[/red1]: {response_dict[data]}",
@@ -214,6 +219,14 @@ class Command(RichCommand):
             response_dict = response.json()
 
             if status.is_success(response.status_code):
+                if signed:
+                    logging.info(
+                        "A signed contract creation.",
+                        extra={
+                            "amount due": str(amount_due),
+                            "action by": auth_data["email"],
+                        },
+                    )
                 table = table_with_title_nd_id_column("Contracts list")
                 table.add_column("Client", style="orchid1")
                 table.add_column("Sales contact", style="green1")
@@ -238,8 +251,10 @@ class Command(RichCommand):
                 draw_title(auth_data["email"])
                 self.console.print(table)
             elif response.status_code == status.HTTP_403_FORBIDDEN:
+                logging.warning("Forbidden endpoint.")
                 self.console.print(response_dict["detail"], style="forbidden")
             else:
+                logging.warning("Something went wrong.")
                 for data in response_dict:
                     self.console.print(
                         f"[red1]{data}[/red1]: {response_dict[data][0]}",
@@ -255,15 +270,18 @@ class Command(RichCommand):
             )
 
             if status.is_success(response.status_code):
+                logging.warning("Contract deletion", extra={"user": auth_data["email"]})
                 draw_title(auth_data["email"])
                 self.console.print(
                     "The contract is successfully deleted from the database.",
                     style="success",
                 )
             elif response.status_code == status.HTTP_403_FORBIDDEN:
+                logging.warning("Forbidden endpoint.")
                 response_dict = response.json()
                 self.console.print(response_dict["detail"], style="forbidden")
             else:
+                logging.warning("Something went wrong.")
                 response_dict = response.json()
                 for data in response_dict:
                     self.console.print(
@@ -275,13 +293,17 @@ class Command(RichCommand):
 
             contract = prompt_for_contract_id()
 
+            contract_got_signed = False
             # Get input for signed value if contract is not signed
             if contract.signed is False:
                 if Confirm.ask("[green]Is the contract signed?[/green]", default=True):
                     signed = str(True)
+                    contract_got_signed = True
                 else:
+                    contract_got_signed = False
                     signed = str(False)
             else:
+                contract_got_signed = False
                 signed = str(True)
 
             total_amount = prompt_for_decimal_value(
@@ -310,6 +332,14 @@ class Command(RichCommand):
             response_dict = response.json()
 
             if status.is_success(response.status_code):
+                if contract_got_signed:
+                    logging.info(
+                        "A contract has signed.",
+                        extra={
+                            "amount due": str(amount_due),
+                            "action by": auth_data["email"],
+                        },
+                    )
                 table = table_with_title_nd_id_column("Contracts list")
                 table.add_column("Client", style="orchid1")
                 table.add_column("Sales contact", style="green1")
@@ -334,8 +364,10 @@ class Command(RichCommand):
                 draw_title(auth_data["email"])
                 self.console.print(table)
             elif response.status_code == status.HTTP_403_FORBIDDEN:
+                logging.warning("Forbidden endpoint.")
                 self.console.print(response_dict["detail"], style="forbidden")
             else:
+                logging.warning("Something went wrong.")
                 for data in response_dict:
                     self.console.print(
                         f"[red1]{data}[/red1]: {response_dict[data]}",
@@ -376,11 +408,13 @@ class Command(RichCommand):
                 draw_title(auth_data["email"])
                 self.console.print(table)
             elif response.status_code == status.HTTP_404_NOT_FOUND:
+                logging.warning("Not found")
                 self.console.print(
                     f"{response.text}",
                     style="warning",
                 )
             else:
+                logging.warning("Something went wrong.")
 
                 self.console.print(
                     f"{response.text}",
@@ -421,11 +455,13 @@ class Command(RichCommand):
                 draw_title(auth_data["email"])
                 self.console.print(table)
             elif response.status_code == status.HTTP_404_NOT_FOUND:
+                logging.warning("Not found")
                 self.console.print(
                     f"{response.text}",
                     style="warning",
                 )
             else:
+                logging.warning("Something went wrong.")
 
                 self.console.print(
                     f"{response.text}",
@@ -466,11 +502,13 @@ class Command(RichCommand):
                 draw_title(auth_data["email"])
                 self.console.print(table)
             elif response.status_code == status.HTTP_404_NOT_FOUND:
+                logging.warning("Not found")
                 self.console.print(
                     f"{response.text}",
                     style="warning",
                 )
             else:
+                logging.warning("Something went wrong.")
 
                 self.console.print(
                     f"{response.text}",
@@ -511,11 +549,13 @@ class Command(RichCommand):
                 draw_title(auth_data["email"])
                 self.console.print(table)
             elif response.status_code == status.HTTP_404_NOT_FOUND:
+                logging.warning("Not found")
                 self.console.print(
                     f"{response.text}",
                     style="warning",
                 )
             else:
+                logging.warning("Something went wrong.")
 
                 self.console.print(
                     f"{response.text}",
@@ -561,11 +601,13 @@ class Command(RichCommand):
                     style="success",
                 )
             elif response.status_code == status.HTTP_404_NOT_FOUND:
+                logging.warning("Not found")
                 self.console.print(
                     f"{response.text}",
                     style="warning",
                 )
             else:
+                logging.warning("Something went wrong.")
                 self.console.print(
                     f"{response.text}",
                     style="warning",

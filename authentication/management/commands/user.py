@@ -174,7 +174,10 @@ class Command(RichCommand):
             response_dict = response.json()
 
             if status.is_success(response.status_code):
-                logging.info(f"User creation, email: {response_dict['email']}")
+                logging.info(
+                    f"User creation, email: {response_dict['email']}",
+                    extra={"action by": auth_data["email"]},
+                )
                 table = table_with_title_nd_id_column("New user's detail")
                 table.add_column("Full name", style="orchid1")
                 table.add_column("Email", no_wrap=True, style="green1")
@@ -223,7 +226,10 @@ class Command(RichCommand):
             )
 
             if status.is_success(response.status_code):
-                logging.warning(f"User deleted: {user.email}")
+                logging.warning(
+                    f"User deleted: {user.email}",
+                    extra={"action by": auth_data["email"]},
+                )
                 draw_title(auth_data["email"])
                 self.console.print(
                     "The user is successfully deleted from the database.",
@@ -288,7 +294,10 @@ class Command(RichCommand):
             response_dict = response.json()
 
             if status.is_success(response.status_code):
-                logging.info(f"User updated: {response_dict['email']}.")
+                logging.info(
+                    f"User updated: {response_dict['email']}.",
+                    extra={"action by": auth_data["email"]},
+                )
                 table = table_with_title_nd_id_column("Updated user info")
                 table.add_column("Full name", style="orchid1")
                 table.add_column("Email", no_wrap=True, style="green1")
