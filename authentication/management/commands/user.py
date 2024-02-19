@@ -1,3 +1,4 @@
+import logging
 from django_rich.management import RichCommand
 from functools import partial
 from rich.console import Console
@@ -87,8 +88,10 @@ class Command(RichCommand):
                 draw_title(auth_data["email"])
                 self.console.print(table)
             elif response.status_code == status.HTTP_403_FORBIDDEN:
+                logging.warning("Forbidden endpoint.")
                 self.console.print(response_dict["detail"], style="forbidden")
             else:
+                logging.warning("Something went wrong.")
                 for data in response_dict:
                     self.console.print(
                         f"[red1]{data}[/red1]: {response_dict[data][0]}",
@@ -133,8 +136,10 @@ class Command(RichCommand):
                 draw_title(auth_data["email"])
                 self.console.print(table)
             elif response.status_code == status.HTTP_403_FORBIDDEN:
+                logging.warning("Forbidden endpoint.")
                 self.console.print(response_dict["detail"], style="forbidden")
             else:
+                logging.warning("Something went wrong.")
                 for data in response_dict:
                     self.console.print(
                         f"[red1]{data}[/red1]: {response_dict[data]}",
@@ -169,6 +174,7 @@ class Command(RichCommand):
             response_dict = response.json()
 
             if status.is_success(response.status_code):
+                logging.info(f"User creation, email: {response_dict['email']}")
                 table = table_with_title_nd_id_column("New user's detail")
                 table.add_column("Full name", style="orchid1")
                 table.add_column("Email", no_wrap=True, style="green1")
@@ -194,8 +200,10 @@ class Command(RichCommand):
                 draw_title(auth_data["email"])
                 self.console.print(table)
             elif response.status_code == status.HTTP_403_FORBIDDEN:
+                logging.warning("Forbidden endpoint.")
                 self.console.print(response_dict["detail"], style="forbidden")
             else:
+                logging.warning("Something went wrong.")
                 for data in response_dict:
                     self.console.print(
                         f"[red1]{data}[/red1]: {response_dict[data][0]}",
@@ -215,15 +223,18 @@ class Command(RichCommand):
             )
 
             if status.is_success(response.status_code):
+                logging.warning(f"User deleted: {user.email}")
                 draw_title(auth_data["email"])
                 self.console.print(
                     "The user is successfully deleted from the database.",
                     style="success",
                 )
             elif response.status_code == status.HTTP_403_FORBIDDEN:
+                logging.warning("Forbidden endpoint.")
                 response_dict = response.json()
                 self.console.print(response_dict["detail"], style="forbidden")
             else:
+                logging.warning("Something went wrong.")
                 response_dict = response.json()
                 for data in response_dict:
                     self.console.print(
@@ -277,6 +288,7 @@ class Command(RichCommand):
             response_dict = response.json()
 
             if status.is_success(response.status_code):
+                logging.info(f"User updated: {response_dict['email']}.")
                 table = table_with_title_nd_id_column("Updated user info")
                 table.add_column("Full name", style="orchid1")
                 table.add_column("Email", no_wrap=True, style="green1")
@@ -302,8 +314,10 @@ class Command(RichCommand):
                 draw_title(auth_data["email"])
                 self.console.print(table)
             elif response.status_code == status.HTTP_403_FORBIDDEN:
+                logging.warning("Forbidden endpoint.")
                 self.console.print(response_dict["detail"], style="forbidden")
             else:
+                logging.warning("Something went wrong.")
                 for data in response_dict:
                     self.console.print(
                         f"[red1]{data}[/red1]: {response_dict[data]}",

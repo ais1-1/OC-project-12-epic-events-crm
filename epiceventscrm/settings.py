@@ -12,8 +12,12 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 import os
 import environ
+import sentry_sdk
+import logging
 
 from pathlib import Path
+from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
 
 env = environ.Env(
     # set casting, default value
@@ -171,3 +175,43 @@ AUTH_USER_MODEL = "authentication.User"
 TOKEN_FILENAME = env("TOKEN_FILENAME")
 # Number of hours for token expiry
 EXPIRE_TOKEN = 24
+
+# Sentry configuration
+sentry_sdk.init(
+    dsn=env("SENTRY_DSN"),
+    integrations=[
+        DjangoIntegration(
+            transaction_style="url",  # name of transactions by it's url
+        ),
+        LoggingIntegration(
+            level=logging.INFO,  # Capture info and above as breadcrumbs
+        ),
+    ],
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    # We recommend adjusting this value in production.
+    traces_sample_rate=1.0,
+    # If you wish to associate users to errors (assuming you are using
+    # django.contrib.auth) you may enable sending PII data.
+    send_default_pii=True,
+)
+
+# Logging configuration
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "sentry": {
+            "level": "INFO",  # Minimum logging level to send to Sentry
+            "class": "sentry_sdk.integrations.logging.EventHandler",
+        },
+        "console": {
+            "level": "DEBUG",  # Minimum logging level to console
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["sentry", "console"],  # Use both sentry and console
+        "level": "INFO",  # Minimum global logging level
+    },
+}

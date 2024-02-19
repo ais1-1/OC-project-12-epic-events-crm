@@ -25,6 +25,10 @@ from clients.views import ClientViewSet
 from contracts.views import ContractViewSet
 from events.views import EventViewSet
 
+# Test sentry integration
+""" def trigger_error(request):
+   division_by_zero = 1 / 0 """
+
 router = DefaultRouter()
 
 router.register(r"users", UserViewSet, basename="users")
@@ -34,6 +38,7 @@ router.register(r"events", EventViewSet, basename="events")
 
 urlpatterns = [
     path("epiccrmadmin/", admin.site.urls),
+    # path('sentry-debug/', trigger_error),
     path("", include(router.urls)),
     path("crm/", include("rest_framework.urls", namespace="rest_framework")),
     path("obtain-token/", CustomObtainAuthTokenView.as_view(), name="obtain_token"),
