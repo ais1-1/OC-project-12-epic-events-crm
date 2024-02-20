@@ -69,6 +69,11 @@ class Command(RichCommand):
 
     def handle(self, *args, **options):
         """Handles 'event' command"""
+
+        # Interface for read event details is accessible by all users.
+        # Create interface is accessible by sales team users.
+        # Update interface is accessible by management and support team.
+        # Delete interface is not accessible. Can only do from django admin.
         connected_user = get_connected_user()
         connected_user_role = connected_user.role
         permitted_to_edit = False

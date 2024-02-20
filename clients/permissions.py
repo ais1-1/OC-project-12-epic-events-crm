@@ -4,6 +4,11 @@ from teams.models import Team
 
 
 class ClientPermissions(permissions.BasePermission):
+    """
+    Read access to all collaborators.
+    Allow create to sales team.
+    Allow edit and delete to the sales contact of the client
+    """
 
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:

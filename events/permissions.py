@@ -4,6 +4,11 @@ from teams.models import Team
 
 
 class EventPermissions(permissions.BasePermission):
+    """
+    Read access to all collaborators.
+    Create access to sales contact of the client.
+    Edit access to management and support team.
+    """
 
     def has_permission(self, request, view):
 

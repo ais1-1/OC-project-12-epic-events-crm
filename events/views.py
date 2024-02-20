@@ -15,6 +15,15 @@ from contracts.models import Contract
 
 
 class EventViewSet(ModelViewSet):
+    """Views for CRUD operations on Event model.
+
+    Methods:
+    create - create event from validated serializer data
+    without_support (action) - show events without support contacts
+    my_events (action) - show events if the authenticated user is the support contact
+
+    """
+
     serializer_class = EventSerializer
     permission_classes = [IsAuthenticated, EventPermissions]
     queryset = Event.objects.all()

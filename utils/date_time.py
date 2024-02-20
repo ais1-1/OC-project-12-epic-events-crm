@@ -23,6 +23,7 @@ def validate_date_input(year: int, month: int, day: int):
     else:
         max_day_value = 28
 
+    # Only positive integers and values starting from 20th century is allowed
     if year < 0 or (year // 100) < 20:
         console.print("[prompt.invalid]Year is invalid")
         return False

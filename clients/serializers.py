@@ -4,6 +4,7 @@ from .models import Client
 
 
 class ClientSerializer(serializers.ModelSerializer):
+    """Serializes Client model"""
 
     sales_contact_name = serializers.SerializerMethodField()
     sales_contact_email = serializers.SerializerMethodField()

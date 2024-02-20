@@ -13,7 +13,17 @@ from utils.interface.console_style import custom_theme, draw_title, draw_subtitl
 def request_logout(
     token_file=ABSOLUTE_PATH_TO_TOKEN_FILE, client=None, test_token=None
 ):
-    """Logs out the current user"""
+    """Logs out the current user
+
+    Args:
+    token_file (str) - path to the token file
+    client(instance of test client) - for test purpose only
+    test_token (str) - token to compare to facilitate tests
+
+    Returns:
+    HttpResponse object from logout endpoint
+
+    """
     draw_title()
     draw_subtitle("Logout")
     headers, auth_data = authorized_header(test_token, token_file)

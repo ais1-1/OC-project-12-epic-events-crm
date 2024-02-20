@@ -38,7 +38,9 @@ class UserManager(BaseUserManager):
     def create_superuser(self, email, password=None, **extra_fields):
         # Set the first Team instance, ie Management, as default value for role
         extra_fields.setdefault("role", Team.objects.get_or_create(pk=1)[0])
+        # Set a first name as default
         extra_fields.setdefault("first_name", "Epic")
+        # Set a last name as default
         extra_fields.setdefault("last_name", "Admin")
         # Create super user by calling create_user
         return self.create_user(email, password, **extra_fields)
@@ -56,8 +58,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     joined_date (str): Date of joining in the company
     created_date (str): Date of creation of an instance
 
-    Methods:
-    _get_full_name: Returns full name by concatenating last and first name
+    Property:
+    full_name: Returns full name by concatenating last and first name accessible like an attribute.
     """
 
     email = models.EmailField(max_length=254, unique=True, editable=True)

@@ -56,6 +56,8 @@ class Command(RichCommand):
     def handle(self, *args, **options):
         """Handles 'client' command"""
 
+        # Interface for read client details is accessible by all users,
+        # remaining interfaces only for sales team members.
         connected_user = get_connected_user()
         connected_user_role = connected_user.role
         permitted = False

@@ -10,6 +10,14 @@ class Contract(models.Model):
     Contract model
 
     Attributes:
+    id (uuid) - id of the contract
+    total_amount (Decimal) - price of the contract
+    amount_due (Decimal) - remaining amount to pay
+    signed (bool) - contract is signed or not
+    client (int) - client related to the contract
+    sales_contact (int) - contact from sales team of the client (assigned during client assignment)
+    created_date (str) - date of creation of the instance
+    updated_date(str) - date of last update of the instance
 
 
     Methods:

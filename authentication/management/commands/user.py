@@ -58,10 +58,13 @@ class Command(RichCommand):
 
     def handle(self, *args, **options):
         """Handles 'user' command"""
+
+        # Only management team members can access the interface for User management
         connected_user = get_connected_user()
         connected_user_role = connected_user.role
 
         if connected_user_role != Team.get_management_team():
+            draw_title(connected_user.email)
             self.console.print(
                 f"Sorry, a {connected_user_role} team member "
                 + "does not have permission to do any of the actions related a user.",

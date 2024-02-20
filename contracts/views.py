@@ -11,7 +11,15 @@ from .permissions import ContractPermissions
 
 
 class ContractViewSet(ModelViewSet):
-    """Views for CRUD operations on Contract model."""
+    """Views for CRUD operations on Contract model.
+
+    Methods:
+    own (action) - show contracts list if the authenticated user is the sales contact
+    unsigned (action) -  show unsigned contracts
+    unpaid (action) - show unpaid contracts
+    signed (action) - show signed contracts
+    without_event (action) - show contracts that do not have an event
+    """
 
     serializer_class = ContractSerializer
     permission_classes = [IsAuthenticated, ContractPermissions]

@@ -9,9 +9,23 @@ class Event(models.Model):
     Event model
 
     Attributes:
+    name (str) - name of the event
+    start_date (str) - starting date
+    end_date (str) - ending date
+    location (str) - address of the event(not required)
+    number_of_attendees (int) - number of attendees
+    notes (str) - extra notes (not required)
+    contract (int) - related signed contract
+    support_contact (int) - contact from support team
+    status (str) - status of the event from EVENT_STATUS (PLANNED by default)
+    created_date (str) - date of creation
+    updated_date (str) - date of update
 
 
     Methods:
+    client_name (property) - full name of the client of the connected contract
+    client_email (property) - email of the client of the connected contract
+    client_phone (property) - phone number of the client of the connected contract
 
     """
 

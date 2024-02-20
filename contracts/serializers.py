@@ -4,6 +4,7 @@ from .models import Contract
 
 
 class ContractSerializer(serializers.ModelSerializer):
+    """Serializes Contract model"""
 
     sales_contact_name = serializers.SerializerMethodField()
     sales_contact_email = serializers.SerializerMethodField()

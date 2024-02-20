@@ -4,6 +4,11 @@ from teams.models import Team
 
 
 class ContractPermissions(permissions.BasePermission):
+    """
+    Read access to all collaborators.
+    All access to management team.
+    Update access to contracts sales contact.
+    """
 
     def has_permission(self, request, view):
         edit_methods = ["PUT", "PATCH"]

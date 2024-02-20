@@ -5,7 +5,7 @@ from teams.models import Team
 
 class UserPermissions(permissions.BasePermission):
     """
-    Allow only management team users to create, update or delete user data.
+    Allow only management team users to create, access, update or delete user data.
     """
 
     def has_permission(self, request, view):

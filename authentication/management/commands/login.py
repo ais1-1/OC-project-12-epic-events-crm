@@ -25,7 +25,14 @@ from utils.interface.message import show_commands_and_help_texts
 def request_get_token(email="", password="", client=None):
     """
     Generate token on request.
-    Returns dict containing credentials and token value.
+
+    Args:
+    email (str) - email of the user
+    password (str) - password of the user
+    client (instance of test client) - for test purpose
+
+    Returns:
+    Dict containing credentials and token value.
     """
 
     draw_title()

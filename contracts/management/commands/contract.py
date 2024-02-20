@@ -81,6 +81,9 @@ class Command(RichCommand):
     def handle(self, *args, **options):
         """Handles 'contract' command"""
 
+        # Interface for read contract details is accessible by all users,
+        # remaining interfaces are accessible by management team users.
+        # Update interface is also accessible by sales team users.
         connected_user = get_connected_user()
         connected_user_role = connected_user.role
         permitted = False

@@ -13,6 +13,7 @@ User = get_user_model()
 
 
 def get_connected_user(test_token=None, token_file=ABSOLUTE_PATH_TO_TOKEN_FILE):
+    """Returns authenticated user"""
     header, auth_data = authorized_header(test_token, token_file)
     connected_user_email = auth_data["email"]
     user = User.objects.get(email=connected_user_email)
@@ -34,6 +35,23 @@ def request_response_data(
     test_token=None,
     token_file=ABSOLUTE_PATH_TO_TOKEN_FILE,
 ):
+    """Request response for each commands.
+
+    Args:
+    root_url (str) - base url for the request
+    operation (str) - operation to perform (read, create, delete and update)
+    request_data (dict) - data to pass to the request
+    object_id (int) - id of the object for read, delete and update
+    filter (str) - endpoint of custom actions
+    client (test client) - only for test purpose
+    test_token (str) - token for test purpose
+    token_file (str) - path to json file with token
+
+    Returns:
+    response (HttpResponse)
+    auth_data (dict) - data from the json file
+
+    """
 
     absolute_url = root_url
 

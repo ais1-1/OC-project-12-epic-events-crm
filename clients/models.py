@@ -7,9 +7,19 @@ class Client(models.Model):
     Client model
 
     Attributes:
+    email (str) - email of the client
+    first_name (str) - first name of the client
+    last_name (str) - last name of the client
+    phone (str) - phone number of the client (not required)
+    company (str) - name of the company of the client (not required)
+    sales_contact (int) - contact from Sales team (assigned during creation)
+    note (str) - related notes (not required)
+    created_date (str) - Date of creation of the instance
 
 
     Methods:
+    full_name (getters): Returns full name by concatenating last and first name
+                     accessible like an attribute.
 
     """
 

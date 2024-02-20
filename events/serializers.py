@@ -9,6 +9,8 @@ User = get_user_model()
 
 
 class EventSerializer(serializers.ModelSerializer):
+    """Serializes Event model"""
+
     support_contact_name = serializers.SerializerMethodField()
     support_contact_email = serializers.SerializerMethodField()
     client_name = serializers.SerializerMethodField()

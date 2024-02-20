@@ -33,6 +33,17 @@ def read_token(token_file=ABSOLUTE_PATH_TO_TOKEN_FILE) -> dict:
 
 
 def authorized_header(test_token=None, token_file=ABSOLUTE_PATH_TO_TOKEN_FILE) -> dict:
+    """
+    Returns header for authentication
+    Args:
+    test_token (str) - token for test purpose
+    token_file (str) - path to token stored json file
+
+    Returns:
+    headers (dict) - authorized header
+    access_token (dict) - auth data (email, token)
+
+    """
     access_token = read_token(token_file)
 
     if access_token and validate_token(access_token, test_token):
@@ -51,6 +62,17 @@ def authorized_header(test_token=None, token_file=ABSOLUTE_PATH_TO_TOKEN_FILE) -
 
 
 def validate_token(credentials, test_token=None):
+    """
+    Validate token for authorization
+
+    Args:
+    credentials (dict) - auth data containing token to validate
+    test_token (str) - token for test purpose only
+
+    Returns:
+    True (bool) if token is not expired and
+    the token of the logging in user is present in the token file
+    """
     if test_token is not None:
         token = test_token
     else:

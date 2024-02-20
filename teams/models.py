@@ -12,10 +12,19 @@ class Team(models.Model):
     """
     Team model
 
+    The instances are created during migration see the second migration file in migrations/.
+
     Attributes:
     name (str): name of the team
     description (str): description of the team
     created_date (str): Date of creation of an instance
+
+    Methods:
+    save - prevent creation and update if there are more team that TEAM_LIMIT
+    delete - prevent deletion
+    get_management_team (static) - returns management team object
+    get_sales_team (static) - returns sales team object
+    get_support_team (static) - returns support team object
     """
 
     name = models.CharField(max_length=255)
