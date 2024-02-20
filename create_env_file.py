@@ -33,7 +33,7 @@ The pre-configured environment variable names are:
 - DB_HOST
 # Expose the port in the server address
 - DB_PORT (default=3306)
-    
+
 
 The generated .env file must be configured with appropriate values
 for each environment variable before use.
@@ -97,4 +97,4 @@ try:
 except IOError as e:
     print(f"Couldn't write to file ({e})")
 else:
-    print(f".env file has created successfully!")
+    print(".env file has created successfully!")

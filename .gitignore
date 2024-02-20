@@ -8,3 +8,4 @@ htmlcov/
 .pytest_cache
 *.json
 staticfiles/
+bandit_report.txt
