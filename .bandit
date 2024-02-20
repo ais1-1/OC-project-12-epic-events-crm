@@ -1,0 +1,2 @@
+[bandit]
+exclude = /.venv,/authentication/tests.py,/clients/tests.py,/conftest.py,/utils/tests.py,/contracts/tests.py,/events/tests.py,/teams/tests.py
