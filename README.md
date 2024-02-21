@@ -172,6 +172,11 @@ Run the server with:
 
 The admin site is available at `http://127.0.0.1:8000/epiccrmadmin/`. Admin site access is granted to managers and superusers.
 
+If you are using the sample data (`epiceventsdb.sql`) provided with the project, you can use the following credentials to test:
+
+email (username field): epic@management.com
+password: epic$ecret
+
 The manager can use the admin site to do any of the CRUD operations on any model (except the deletion of three major `Team` instances, which are blocked).
 
 [Go to the top](#epic-events-crm)
