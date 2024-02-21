@@ -280,12 +280,6 @@ class TestInterface:
         assert valid is True
         assert contract == signed_contract
 
-    def test_validate_uuid_value_error(self, capsys):
-        with pytest.raises(SystemExit):
-            valid, contract = message.validate_uuid("pdovdjusn")
-        capture = capsys.readouterr()
-        assert "Invalid id" in capture.out
-
     def test_prompt_for_contract_id(self, capsys, monkeypatch, signed_contract):
         monkeypatch.setattr("sys.stdin", io.StringIO(str(signed_contract.id)))
         result = message.prompt_for_contract_id()

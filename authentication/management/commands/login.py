@@ -137,7 +137,7 @@ class Command(RichCommand):  # pragma: no cover
             password = ""
 
         auth_data = request_get_token(email, password)
-        if auth_data["token"] is not None:
+        if auth_data["token"] is not None and auth_data["token"].strip() != "":
             self.console.print(
                 "You have successfully logged in with the email "
                 + f"[bold blue]{auth_data['email']}[/bold blue] :smile:",

@@ -264,7 +264,7 @@ To view the report with a test report:
 
         pytest --cov=.
 
-The current coverage is at 93%:
+The current coverage is at 92%:
 
 ![Coverage report](/docs/img/screenshot_2024-02-21_coverage_report.png)
 
