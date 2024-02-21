@@ -19,7 +19,6 @@ pytz = "*"
 django-rich = "*"
 rich = "*"
 sentry-sdk = "*"
-django-axes = {extras = ["ipware"], version = "*"}
 bandit = "*"
 
 [dev-packages]
