@@ -170,9 +170,9 @@ Run the server with:
 
 ### Admin site
 
-Tha admin site is available at `http://127.0.0.1:8000/epiccrmadmin/`. Admin site access is granted to managers and superusers.
+The admin site is available at `http://127.0.0.1:8000/epiccrmadmin/`. Admin site access is granted to managers and superusers.
 
-The manager can use the admin site to do any of the CRUD operations on any model (except the deletion of three major `Team` instances, which is blocked).
+The manager can use the admin site to do any of the CRUD operations on any model (except the deletion of three major `Team` instances, which are blocked).
 
 [Go to the top](#epic-events-crm)
 
@@ -230,7 +230,7 @@ Arguments for the basic CRUD operations are:
 
 #### Tests
 
-The project uses the `pytest` and `django-pytest` modules for testing. The tests corresponding to each application resides in the corresponding folder with the name `tests.py`.
+The project uses the `pytest` and `django-pytest` modules for testing. The tests corresponding to each application reside in the corresponding folder with the name `tests.py`.
 
 The pytest configuration can be seen in the `setup.cfg` file under the `[tool:pytest]` line.
 
@@ -244,11 +244,11 @@ Run tests using the following commands:
         # Run the test
         pytest
 
-Note that if you are using a non-privileged user for the database you should grant privileges for test_database too (refer [Create MariaDB database](#create-mariadb-database)).
+Note that if you are using a non-privileged user for the database, you should grant privileges for test_database too (refer [Create MariaDB database](#create-mariadb-database)).
 
 #### Coverage
 
-The project uses `Coverage.py` and `pytest-cov` for better coverage reading.
+The project uses `Coverage.py` and `pytest-cov` for better reading of coverage report.
 
 Coverage configuration, such as files to exclude, is in the `setup.cfg` file under `[coverage:run]`.
 
@@ -272,7 +272,7 @@ The current coverage is at 93%:
 
 ### Linting
 
-The project uses `flake8` and `black` modules for linting. `Flake8` has been configured to allow a maximum code line length of up to 99 characters. And it will not lint in the migrations and virtual environment folders. Refer the `setup.cfg` file under `[flake8]` for more details.
+The project uses `flake8` and `black` modules for linting. `Flake8` has been configured to allow a maximum code line length of up to 99 characters. And it will not check in the migrations and virtual environment folders. Refer to the `setup.cfg` file under `[flake8]` for more details.
 
 Linting can be done using the following commands:
 
@@ -283,7 +283,7 @@ Linting can be done using the following commands:
         # Run flake8
         flake8
 
-Currently, there are no errors so you will not see anything on the terminal.
+Currently, there are no errors, so you will not see anything on the terminal.
 
 [Go to the top](#epic-events-crm)
 
@@ -296,9 +296,9 @@ This project uses **Sentry** and the `logging` module for error handling. To use
 * Login to Sentry
 * Create a new project
 * Choose a platform for the project, in our case Django.
-* Choose a team for your project then click on: *Create a project*
+* Choose a team for your project, then click on: *Create a project*
 
-Once the project is created, you can retrieve the `SENTRY_DSN` key in `Project Settings > Client Keys (DSN)` to integrate into the `.env` file
+Once the project is created, you can retrieve the `SENTRY_DSN` key in `Project Settings > Client Keys (DSN)` to integrate into the `.env` file.
 
 Once all these steps have been completed and the local server has started, you will be able to view the application activity on Sentry.
 
@@ -306,7 +306,7 @@ To test Sentry logging, uncomment the function `trigger_error` in `epiceventscrm
 
 #### Configuration for the module `logging`
 
-To complete error handling by inserting appropriate logs into the code, this project uses Python's `logging` module. It is supported by Sentry with the `sentry-sdk` module installed. These logs should be placed in strategic places in the code, such as critical functions, `try/except` blocks and data validation points. Logs are also used to alert certain actions in this project, like creating or updating a user, signing a contract etc.
+To complete error handling by inserting appropriate logs into the code, this project uses Python's `logging` module. It is supported by Sentry with the `sentry-sdk` module installed. These logs should be placed in strategic places in the code, such as critical functions, `try/except` blocks and data validation points. Logs are also used to alert to certain actions in this project, like creating or updating a user, signing a contract etc.
 
 Here is a code snippet from the project (`authentication/management/commands/user.py`) where Sentry will give you an alert on user creation:
 
@@ -322,11 +322,11 @@ Here is a code snippet from the project (`authentication/management/commands/use
 
 ### Security and SAST report
 
-This project do its best to integrate **OWASP** guidance to improve its security. You can see various implementations according to the [Django Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Django_Security_Cheat_Sheet.html#django-security-cheat-sheet) and [DRF Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Django_REST_Framework_Cheat_Sheet.html#django-rest-framework-drf-cheat-sheet).
+This project does its best to integrate **OWASP** guidance to improve its security. You can see various implementations according to the [Django Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Django_Security_Cheat_Sheet.html#django-security-cheat-sheet) and [DRF Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Django_REST_Framework_Cheat_Sheet.html#django-rest-framework-drf-cheat-sheet).
 
 This project includes a static analysis security tool (SAST), `Bandit`. It is recommended by **OWASP** to check security risks (refer [OWASP cheat sheet on SAST tools](https://cheatsheetseries.owasp.org/cheatsheets/Django_REST_Framework_Cheat_Sheet.html#sast-tools)).
 
-To create a report using `bandit` and store it to a file named `sast_report.txt`, use the following command:
+To create a report using `bandit` and store it to a file named `sast_report.txt`, use the following command inside the root folder:
 
         bandit -r . > sast_report.txt
 
