@@ -17,7 +17,7 @@
     * [Tests and coverage](#tests-and-coverage)
     * [Linting](#linting)
     * [Logging](#logging)
-    * [SAST report](#sast-report)
+    * [Security and SAST report](#security-and-sast-report)
 
 
 
@@ -43,7 +43,7 @@ For this method, it is necessary to have pipenv already installed on your python
 
 1. Move to the root folder with:
     
-         cd OC-project-12-epic-events-crm-main
+         cd path/to/OC-project-12-epic-events-crm-main
 2. Install project dependencies with:
 
         pipenv install
@@ -55,7 +55,7 @@ For this method, it is necessary to have pipenv already installed on your python
 
 1. Move to the root folder with:
 
-         cd OC-project-12-epic-events-crm-main
+         cd path/to/OC-project-12-epic-events-crm-main
 2. Create a virtual environment for the project with ` py -m venv env` on windows or `python3 -m venv env` on macos or linux.
 3. Activate the virtual environment with `env\Scripts\activate` on windows or `source env/bin/activate` on macos or linux.
 4. Install project dependencies with:
@@ -170,7 +170,16 @@ Run the server with:
 
 ### Admin site
 
+Tha admin site is available at `http://127.0.0.1:8000/epiccrmadmin/`. Admin site access is granted to managers and superusers.
+
+The manager can use the admin site to do any of the CRUD operations on any model (except the deletion of three major `Team` instances, which is blocked).
+
+[Go to the top](#epic-events-crm)
+
 ### CRUD operations with CLI
+
+#### Note that permissions are limited in each case. Refer `docs/specifications_fr.pdf` for the details. 
+To test permissions see [the postman workspace](https://www.postman.com/ais1-1/workspace/epiceventscrm-p12/collection/)
 
 First you need to activate the virtual environment (refer [Install dependencies](#install-dependencies)) and then run the application (refer [Run the application](#run-the-application)).
 
@@ -219,16 +228,123 @@ Arguments for the basic CRUD operations are:
 
 ### Tests and coverage
 
+#### Tests
+
+The project uses the `pytest` and `django-pytest` modules for testing. The tests corresponding to each application resides in the corresponding folder with the name `tests.py`.
+
+The pytest configuration can be seen in the `setup.cfg` file under the `[tool:pytest]` line.
+
+Run tests using the following commands:
+
+
+        # Move to root folder
+        cd path/to/OC-project-12-epic-events-crm-main
+        # Activate virtual environment
+        pipenv shell
+        # Run the test
+        pytest
+
+Note that if you are using a non-privileged user for the database you should grant privileges for test_database too (refer [Create MariaDB database](#create-mariadb-database)).
+
+#### Coverage
+
+The project uses `Coverage.py` and `pytest-cov` for better coverage reading.
+
+Coverage configuration, such as files to exclude, is in the `setup.cfg` file under `[coverage:run]`.
+
+To view the coverage report:
+
+        # Move to root folder
+        cd path/to/OC-project-12-epic-events-crm-main
+        # Activate virtual environment
+        pipenv shell
+        coverage report -m
+
+To view the report with a test report:
+
+        pytest --cov=.
+
+The current coverage is at 93%:
+
+![Coverage report](/docs/img/screenshot_2024-02-21_coverage_report.png)
+
 [Go to the top](#epic-events-crm)
 
 ### Linting
+
+The project uses `flake8` and `black` modules for linting. `Flake8` has been configured to allow a maximum code line length of up to 99 characters. And it will not lint in the migrations and virtual environment folders. Refer the `setup.cfg` file under `[flake8]` for more details.
+
+Linting can be done using the following commands:
+
+        # Move to root folder
+        cd path/to/OC-project-12-epic-events-crm-main
+        # Activate virtual environment
+        pipenv shell
+        # Run flake8
+        flake8
+
+Currently, there are no errors so you will not see anything on the terminal.
 
 [Go to the top](#epic-events-crm)
 
 ### Logging
 
+This project uses **Sentry** and the `logging` module for error handling. To use **Sentry** and be able to use monitoring, [create an account on Sentry](https://sentry.io/signup/).
+
+#### Configuration for Sentry
+
+* Login to Sentry
+* Create a new project
+* Choose a platform for the project, in our case Django.
+* Choose a team for your project then click on: *Create a project*
+
+Once the project is created, you can retrieve the `SENTRY_DSN` key in `Project Settings > Client Keys (DSN)` to integrate into the `.env` file
+
+Once all these steps have been completed and the local server has started, you will be able to view the application activity on Sentry.
+
+To test Sentry logging, uncomment the function `trigger_error` in `epiceventscrm/urls.py` and also the `sentry-debug` endpoint inside `urlpatterns` list in the same file. Then navigate to the end point using a web browser, you can see a `ZeroDivisionError`. Check the project's page in Sentry, you should see the same issue there.
+
+#### Configuration for the module `logging`
+
+To complete error handling by inserting appropriate logs into the code, this project uses Python's `logging` module. It is supported by Sentry with the `sentry-sdk` module installed. These logs should be placed in strategic places in the code, such as critical functions, `try/except` blocks and data validation points. Logs are also used to alert certain actions in this project, like creating or updating a user, signing a contract etc.
+
+Here is a code snippet from the project (`authentication/management/commands/user.py`) where Sentry will give you an alert on user creation:
+
+        if status.is_success(response.status_code):
+                logging.info(
+                    f"User creation, email: {response_dict['email']}",
+                    extra={"action by": auth_data["email"]},
+                )
+
+
+
 [Go to the top](#epic-events-crm)
 
-### SAST report
+### Security and SAST report
+
+This project do its best to integrate **OWASP** guidance to improve its security. You can see various implementations according to the [Django Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Django_Security_Cheat_Sheet.html#django-security-cheat-sheet) and [DRF Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Django_REST_Framework_Cheat_Sheet.html#django-rest-framework-drf-cheat-sheet).
+
+This project includes a static analysis security tool (SAST), `Bandit`. It is recommended by **OWASP** to check security risks (refer [OWASP cheat sheet on SAST tools](https://cheatsheetseries.owasp.org/cheatsheets/Django_REST_Framework_Cheat_Sheet.html#sast-tools)).
+
+To create a report using `bandit` and store it to a file named `sast_report.txt`, use the following command:
+
+        bandit -r . > sast_report.txt
+
+Configurations for the module can be seen inside `.bandit` file. Here is the resume of the current report:
+
+
+        Run metrics:
+                Total issues (by severity):
+                        Undefined: 0
+                        Low: 6
+                        Medium: 0
+                        High: 0
+                Total issues (by confidence):
+                        Undefined: 0
+                        Low: 0
+                        Medium: 6
+                        High: 0
+        Files skipped (0):
+
 
 [Go to the top](#epic-events-crm)

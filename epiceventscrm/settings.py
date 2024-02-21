@@ -226,3 +226,10 @@ LOGGING = {
         "level": "INFO",  # Minimum global logging level
     },
 }
+
+if DEBUG:
+    CSRF_COOKIE_SECURE = False
+    CSRF_COOKIE_HTTPONLY = False
+else:
+    CSRF_COOKIE_SECURE = True
+    CSRF_COOKIE_HTTPONLY = True

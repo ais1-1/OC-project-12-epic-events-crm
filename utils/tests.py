@@ -7,7 +7,6 @@ from django.urls import reverse
 from django.contrib.auth import get_user_model
 from rest_framework import status
 
-""" from authentication.management.commands import login """
 from teams.models import Team
 from events.models import Event
 from contracts.models import Contract
@@ -281,7 +280,6 @@ class TestInterface:
         assert valid is True
         assert contract == signed_contract
 
-    @pytest.mark.django_db
     def test_validate_uuid_value_error(self, capsys):
         with pytest.raises(SystemExit):
             valid, contract = message.validate_uuid("pdovdjusn")
@@ -408,19 +406,6 @@ class TestAuthentication:
         expected = None
         output = read_token()
         assert expected == output
-
-    """ def test_read_token(self, sales_user):
-        email = sales_user.email
-        token = str(Token.objects.get_or_create(user=sales_user))
-        auth_data = {
-            "email": email,
-            "password": "",
-            "token": token,
-        }
-        login.write_token(auth_data)
-        output = read_token()
-        expected = auth_data
-        assert expected == output """
 
     def test_authorized_header_with_non_authenticated(self, capsys):
         if os.path.isfile(ABSOLUTE_PATH_TO_TOKEN_FILE) is True:
